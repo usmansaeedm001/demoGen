@@ -49,14 +49,6 @@ public class ${NAME}EntityValidatorImpl implements ${NAME}EntityValidator {
 	#end
 	return exists;
 		
-		exists = exists && Optional.ofNullable(dto)
-			.map(${NAME}Dto::get${parent}Uuid)
-			.map(s -> ${NAME}.builder().${parentCamelCase}Uuid(s).isActive(true).build())
-			.map(entity -> repository.exists(Example.of(entity)))
-			.filter(aBoolean -> !aBoolean)
-			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode(RequestType.POST),
-				"${NAME} already exists."));
-		
 	}
 
 	@Override
