@@ -23,11 +23,15 @@ public interface ${NAME}Repository extends JpaRepository<${NAME}, Long>{
 		Optional<${NAME}> findByUuidAnd${principal}Uuid(String uuid, String principalUuid);
 		List<${NAME}> findAllBy${principal}UuidAndUuidIn(String principalUuid, List<String> uuidList);
 		List<${NAME}> findAllBy${principal}Uuid(String uuid);
+		#set($principalCamelCase = $principal.substring(0,1).toLowerCase()+$principal.substring(1))
+		Boolean existsBy${principal}UuidAndUuidNot(String ${principalCamelCase}Uuid, String uuid);
 
 		boolean existsByUuidAnd${principal}UuidAndIsActiveTrue(String uuid, String principalUuid);
 		Optional<${NAME}> findByUuidAnd${principal}UuidAndIsActiveTrue(String uuid, String principalUuid);
 		List<${NAME}> findAllBy${principal}UuidAndUuidInAndIsActiveTrue(String principalUuid, List<String> uuidList);
 		List<${NAME}> findAllBy${principal}UuidAndIsActiveTrue(String uuid);
+		#set($principalCamelCase = $principal.substring(0,1).toLowerCase()+$principal.substring(1))
+		Boolean existsBy${principal}UuidAndUuidNotAndIsActiveTrue(String ${principalCamelCase}Uuid, String uuid);
 
 		#foreach($parent in $PARENT.split(","))
 			#if($parent  && $parent != "" && $parent != $principal)
@@ -35,6 +39,8 @@ public interface ${NAME}Repository extends JpaRepository<${NAME}, Long>{
 				Optional<${NAME}> findBy${parent}UuidAnd${principal}UuidAndIsActiveTrue(String uuid, String principalUuid);
 				List<${NAME}> findAllBy${parent}UuidAnd${principal}UuidAndUuidInAndIsActiveTrue(String uuid, String principalUuid, List<String> uuidList);
 				List<${NAME}> findAllBy${parent}UuidAnd${principal}UuidAndIsActiveTrue(String uuid, String principalUuid);
+				#set($parentCamelCase = $parent.substring(0,1).toLowerCase()+$parent.substring(1))
+				Boolean existsBy${parent}UuidAndUuidNotAndIsActiveTrue(String ${parentCamelCase}Uuid, String uuid);
 			#end
 		#end
 	#else
@@ -44,6 +50,8 @@ public interface ${NAME}Repository extends JpaRepository<${NAME}, Long>{
 					Optional<${NAME}> findBy${parent}UuidAndIsActiveTrue(String uuid);
 					List<${NAME}> findAllBy${parent}UuidAndUuidInAndIsActiveTrue(String uuid, String principalUuid);
 					List<${NAME}> findAllBy${parent}UuidAndIsActiveTrue(String uuid);
+					#set($parentCamelCase = $parent.substring(0,1).toLowerCase()+$parent.substring(1))
+					Boolean existsBy${parent}UuidAndUuidNotAndIsActiveTrue(String ${parentCamelCase}Uuid, String uuid);
 			#end
 		#end
 	#end
