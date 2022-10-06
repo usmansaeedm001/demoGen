@@ -5,6 +5,7 @@
 #set($principal = ${Principal})
 #set($PARENT = ${Parent})
 #set($apiContextPath = ${Api_context_path})
+#set($uniqueField = ${Unique_field})
 #if (${PACKAGE_NAME} && ${PACKAGE_NAME} != "")package ${PACKAGE_NAME};#end
 
 import javax.persistence.*;
@@ -31,6 +32,13 @@ public class ${NAME} extends AbstractAuditing{
 
     @Column(name = "uuid")
     private String uuid;
+
+    #if(${uniqueField} && ${uniqueField} != "")
+		#set($uniqueFieldCamelCase = $uniqueField.substring(0,1).toLowerCase()+$uniqueField.substring(1))
+    	@Column(name = "${uniqueFieldCamelCase}")
+    	private String ${uniqueFieldCamelCase};
+	#end
+
     
     #if( ${principal} && ${principal} != "")
 		#set($principalCamelCase = $principal.substring(0,1).toLowerCase()+$principal.substring(1))

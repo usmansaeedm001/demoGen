@@ -12,9 +12,9 @@ public class GenApplication {
 		ParentUnitGenApplication.generate(Constants.mainComponent);
 		ChildUnitGenApplication.generate(Constants.account, Constants.mainComponent);
 		ChildUnitGenApplication.generate(Constants.bankAccount, Constants.account + "," + Constants.mainComponent);
-		AggregateApiGenApplication.generate(Constants.name, Constants.mainComponent, Constants.childList);
-		CompositeUnitGenApplication.generate(Constants.account,Constants.mainComponent, Constants.basePackege);
-		CompositeAggregateGenApplication.generate(Constants.name, Constants.mainComponent, Constants.childList);
+//		AggregateApiGenApplication.generate(Constants.name, Constants.mainComponent, Constants.childList);
+//		CompositeUnitGenApplication.generate(Constants.account,Constants.mainComponent, Constants.basePackege);
+//		CompositeAggregateGenApplication.generate(Constants.name, Constants.mainComponent, Constants.childList);
 	}
 
 

@@ -1,4 +1,5 @@
 #set($PARENT = ${Parent})
+#set($uniqueField = ${Unique_field})
 #if (${PACKAGE_NAME} && ${PACKAGE_NAME} != "")package ${PACKAGE_NAME};#end
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -19,6 +20,12 @@ public class ${NAME}Dto {
     
     @JsonProperty("uuid")
     private String uuid;
+
+    #if(${uniqueField} && ${uniqueField} != "")
+	#set($uniqueFieldCamelCase = $uniqueField.substring(0,1).toLowerCase()+$uniqueField.substring(1))
+    	@JsonProperty("${uniqueFieldCamelCase}")
+    	private String ${uniqueFieldCamelCase};
+	#end
 
     #if( ${principal} && ${principal} != "")
 		#set($principalCamelCase = $principal.substring(0,1).toLowerCase()+$principal.substring(1))

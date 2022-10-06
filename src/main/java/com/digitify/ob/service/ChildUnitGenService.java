@@ -41,6 +41,7 @@ public class ChildUnitGenService {
 		context.put("Parent", parent);
 //		context.put("Parent", "");
 		context.put("Api_context_path", "/api/" + name.toLowerCase());
+		context.put("Unique_field", "ChildNumber");
 
 		return context;
 	}

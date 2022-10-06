@@ -1,5 +1,8 @@
 #set($PARENT = ${Parent})
 #set($basePackage = ${Base_package})
+#set($uniqueField = ${Unique_field})
+#set($NameCamelCase = $NAME.substring(0,1).toLowerCase()+$NAME.substring(1))
+#set($uniqueFieldCamelCase = $uniqueField.substring(0,1).toLowerCase()+$uniqueField.substring(1))
 #if (${PACKAGE_NAME} && ${PACKAGE_NAME} != "")package ${PACKAGE_NAME};#end
 
 import ${basePackage}.enums.ErrorCode;
@@ -35,6 +38,14 @@ public class ${NAME}EntityValidatorImpl implements ${NAME}EntityValidator {
 	@Override
 	public Boolean validateDto(${NAME}Dto dto) throws BusinessValidationException {
 	Boolean exists = true;
+	#if(${uniqueField} && ${uniqueField} != "")
+	exists = exists && Optional.ofNullable(dto)
+			.map(${NAME}Dto::get${uniqueField})
+			.map(s -> repository.exists(Example.of(${NAME}.builder().${uniqueFieldCamelCase}(s).isActive(true).build())))
+			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode(RequestType.NOOP),
+				"${uniqueField} already exists."));
+	#end
+
 	#if( ${PARENT} && ${PARENT} != "")
 	#foreach($parent in $PARENT.split(","))
 		#set($parentCamelCase = $parent.substring(0,1).toLowerCase()+$parent.substring(1))
@@ -65,6 +76,15 @@ public class ${NAME}EntityValidatorImpl implements ${NAME}EntityValidator {
 	@Override
 	public Boolean validate(${NAME}Dto dto, ${NAME} entity) throws BusinessValidationException {
 		Boolean exists = true;
+		#if(${uniqueField} && ${uniqueField} != "")
+		exists = exists && Optional.ofNullable(dto)
+			.filter(${NameCamelCase}Dto -> StringUtils.hasLength(${NameCamelCase}Dto.get${uniqueField}()))
+			.filter(${NameCamelCase}Dto -> Objects.nonNull(entity))
+			.map(${NameCamelCase}Dto -> repository.existsBy${uniqueField}AndUuidNot(${NameCamelCase}Dto.get${uniqueField}(), entity.getUuid()))
+			.filter(aBoolean -> !aBoolean)
+			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode(RequestType.POST),
+			"${uniqueField} already exists."));
+		#end
 		#if( ${PARENT} && ${PARENT} != "")
 #foreach($parent in $PARENT.split(","))
 	#set($parentCamelCase = $parent.substring(0,1).toLowerCase()+$parent.substring(1))
@@ -73,7 +93,8 @@ public class ${NAME}EntityValidatorImpl implements ${NAME}EntityValidator {
 			.filter(dto1 -> Objects.nonNull(entity))
 			.map(dto1 -> repository.existsBy${parent}UuidAndUuidNot(dto1.get${parent}Uuid(), entity.getUuid()))
 			.filter(aBoolean -> !aBoolean)
-			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode(RequestType.NOOP), "${NAME} already exists."));
+			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode(RequestType.NOOP),
+			"${NAME} already exists."));
 		#end
 		#end
 		return exists;
@@ -82,12 +103,22 @@ public class ${NAME}EntityValidatorImpl implements ${NAME}EntityValidator {
 	@Override
 	public Boolean validatePartialUpdate(${NAME}Dto dto, ${NAME} entity) throws BusinessValidationException {
 		boolean exists = true;
+		#if(${uniqueField} && ${uniqueField} != "")
+		if (dto != null && StringUtils.hasLength(dto.get${uniqueField}())) {
+			if (repository.existsBy${uniqueField}AndUuidNot(dto.get${uniqueField}(), entity.getUuid())) {
+				throw new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode(RequestType.PATCH),
+			"${uniqueField} already exists.");
+			}
+		}
+		#end
+		
 		#if( ${PARENT} && ${PARENT} != "")
 		#foreach($parent in $PARENT.split(","))
 		#set($parentCamelCase = $parent.substring(0,1).toLowerCase()+$parent.substring(1))
 		if (dto != null && StringUtils.hasLength(dto.get${parent}Uuid())) {
 			if (repository.existsBy${parent}UuidAndUuidNot(dto.get${parent}Uuid(), entity.getUuid())) {
-				throw new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode(RequestType.PATCH), "${NAME} already exists.");
+				throw new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode(RequestType.PATCH),
+				"${NAME} already exists.");
 			}
 		}
 		#end
