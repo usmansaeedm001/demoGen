@@ -94,6 +94,11 @@ public interface ${NAME}Repository extends JpaRepository<${NAME}, Long>{
 	#end
 
 	#if(${uniqueField} && ${uniqueField} != "")
+		/******
+			*
+			* Query By unique ${uniqueField}
+			*
+			**********/
 		boolean existsBy${uniqueField}AndUuidNot(String ${uniqueFieldCamelCase}, String uuid);
 		boolean existsBy${uniqueField}AndUuidNotAndIsActiveTrue(String ${uniqueFieldCamelCase}, String uuid);
 	#end
