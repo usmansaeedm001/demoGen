@@ -40,7 +40,7 @@ public class ${NAME}EntityValidatorImpl implements ${NAME}EntityValidator {
 		#set($parentCamelCase = $parent.substring(0,1).toLowerCase()+$parent.substring(1))
 			exists = exists && Optional.ofNullable(dto)
 			.map(${NAME}Dto::get${parent}Uuid)
-			.map(s -> ${NAME}.builder().${parentCamelCase}Uuid(s).isActive(true).build())
+			.map(s -> ${NAME}.builder().${parentCamelCase}Uuid(s).build())
 			.map(entity -> repository.exists(Example.of(entity)))
 			.filter(aBoolean -> !aBoolean)
 			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode(RequestType.POST),
@@ -71,7 +71,7 @@ public class ${NAME}EntityValidatorImpl implements ${NAME}EntityValidator {
 		exists = exists && Optional.ofNullable(dto)
 			.filter(dto1 -> StringUtils.hasLength(dto1.get${parent}Uuid()))
 			.filter(dto1 -> Objects.nonNull(entity))
-			.map(dto1 -> repository.existsBy${parent}UuidAndUuidNotAndIsActiveTrue(dto1.get${parent}Uuid(), entity.getUuid()))
+			.map(dto1 -> repository.existsBy${parent}UuidAndUuidNot(dto1.get${parent}Uuid(), entity.getUuid()))
 			.filter(aBoolean -> !aBoolean)
 			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode(RequestType.NOOP), "${NAME} already exists."));
 		#end
@@ -86,7 +86,7 @@ public class ${NAME}EntityValidatorImpl implements ${NAME}EntityValidator {
 		#foreach($parent in $PARENT.split(","))
 		#set($parentCamelCase = $parent.substring(0,1).toLowerCase()+$parent.substring(1))
 		if (dto != null && StringUtils.hasLength(dto.get${parent}Uuid())) {
-			if (repository.existsBy${parent}UuidAndUuidNotAndIsActiveTrue(dto.get${parent}Uuid(), entity.getUuid())) {
+			if (repository.existsBy${parent}UuidAndUuidNot(dto.get${parent}Uuid(), entity.getUuid())) {
 				throw new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode(RequestType.PATCH), "${NAME} already exists.");
 			}
 		}

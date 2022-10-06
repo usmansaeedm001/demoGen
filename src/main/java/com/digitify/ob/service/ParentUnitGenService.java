@@ -34,8 +34,8 @@ public class ParentUnitGenService {
 		context.put("Table_name", name.toLowerCase());
 		context.put("Type_Enum_List", "Type1,Type2,Type3");
 		context.put("Status_Enum_List", "Status1,Status2,Status3");
-		context.put("Parent", parent);
-		context.put("Principal", "ApplicationCustomer");
+//		context.put("Parent", parent);
+//		context.put("Principal", "ApplicationCustomer");
 		context.put("Api_context_path", "/api/" + name.toLowerCase());
 
 		return context;
