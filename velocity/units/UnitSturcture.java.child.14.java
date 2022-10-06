@@ -18,6 +18,12 @@ public interface ${NAME}Repository extends JpaRepository<${NAME}, Long>{
 	List<${NAME}> findAllByUuidIn(List<String> uuidList);
 	void deleteAllByUuidIn(List<String> uuids);
 	/****************/
+
+	boolean existsByUuidAndIsActiveTrue(String uuid);
+    Optional<${NAME}> findByUuidAndIsActiveTrue(String uuid);
+	List<${NAME}> findAllByUuidInAndIsActiveTrue(List<String> uuidList);
+	void deleteAllByUuidInAndIsActiveTrue(List<String> uuids);
+	/****************/
 	#if(${principal} && ${principal} != "")
 		boolean existsByUuidAnd${principal}Uuid(String uuid, String principalUuid);
 		Optional<${NAME}> findByUuidAnd${principal}Uuid(String uuid, String principalUuid);

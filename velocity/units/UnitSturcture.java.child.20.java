@@ -88,6 +88,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 					.map(aDto -> {
 						${NAME} entity = mapper.toEntity(aDto);
 						entity.set${principal}Uuid(getPrincipalUuid());  /** search only loggedIn customer's ${NAME} */
+						entity.setIsActive(true);
 						return entity;
 					})
 					.map(Example::of)
@@ -119,7 +120,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 					.filter(aDto -> validator.validateDto(aDto))
 					.map(${NAME}Dto::getUuid)
 					.filter(StringUtils::hasLength)
-					.flatMap(dtoUuid -> repository.findByUuidAnd${principal}UuidAndIsActiveTrue(dtoUuid, getPrincipalUuid()))
+					.flatMap(dtoUuid -> repository.findByUuidAnd${principal}Uuid(dtoUuid, getPrincipalUuid()))
 					.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity)));
 				if (optionalEntity.isPresent()) {
 					throw new ApplicationUncheckException(new EnumerationWrapper<>(ErrorCode.INVALID_REQUEST), trackCode, HttpStatus.UNPROCESSABLE_ENTITY);
@@ -286,7 +287,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 			public Optional<${NAME}Dto> getByUuid(String uuid) {
 				return Optional.ofNullable(uuid)
 					.filter(StringUtils::hasLength)
-					.flatMap(s -> repository.findByUuid(s))
+					.flatMap(s -> repository.findByUuidAndIsActiveTrue(s))
 					.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity)))
 					.map(entity -> mapper.toDto(entity));
 			}
@@ -295,7 +296,11 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 			public List<${NAME}Dto> search(${NAME}Dto dto, PageRequest pageRequest) {
 			return Optional.ofNullable(dto)
 				.filter(dto1 -> Objects.nonNull(pageRequest))
-				.map(aDto -> mapper.toEntity(aDto))
+				.map(aDto -> {
+						${NAME} entity = mapper.toEntity(aDto);
+						entity.setIsActive(true);
+						return entity;
+					})
 				.map(Example::of)
 				.map(example -> repository.findAll(example, pageRequest))
 				.stream()
@@ -350,7 +355,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 				return Optional.of(dto)
 					.map(${NAME}Dto::getUuid)
 					.filter(StringUtils::hasLength)
-					.flatMap(dtoUuid -> repository.findByUuid(dtoUuid))
+					.flatMap(dtoUuid -> repository.findByUuidAndIsActiveTrue(dtoUuid))
 					.filter(Rethrow.rethrowPredicate(entity -> validator.validate(dto, entity)))
 					.map(entity -> mapper.update(dto, entity))
 					.orElseThrow(() -> new ApplicationUncheckException(new EnumerationWrapper<>(ErrorCode.NOT_FOUND), trackCode, HttpStatus.UNPROCESSABLE_ENTITY));
@@ -376,7 +381,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 				return Optional.ofNullable(dto)
 					.map(${NAME}Dto::getUuid)
 					.filter(StringUtils::hasLength)
-					.flatMap(dtoUuid -> repository.findByUuid(dtoUuid))
+					.flatMap(dtoUuid -> repository.findByUuidAndIsActiveTrue(dtoUuid))
 					.filter(Rethrow.rethrowPredicate(entity -> validator.validatePartialUpdate(dto, entity)))
 					.map(entity -> mapper.partialUpdate(dto, entity))
 					.orElseThrow(() -> new ApplicationUncheckException(new EnumerationWrapper<>(ErrorCode.NOT_FOUND), trackCode, HttpStatus.UNPROCESSABLE_ENTITY));
@@ -394,7 +399,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 				TrackCode trackCode = trackCode(RequestType.DELETE);
 				Optional<${NAME}> optionalEntity = Optional.ofNullable(uuid)
 				.filter(StringUtils::hasLength)
-				.flatMap(s -> repository.findByUuid(s))
+				.flatMap(s -> repository.findByUuidAndIsActiveTrue(s))
 				.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity)));
 				if (optionalEntity.isPresent()) {
 					repository.delete(optionalEntity.get());
