@@ -36,7 +36,7 @@ public interface ${NAME}DataService extends DataService<${NAME}Dto> {
 			#end
 		#end
 	#else
-		#if($parent  && $parent != "")
+		#if($PARENT  && $PARENT != "")
 			#foreach($parent in $PARENT.split(","))
 				List<${NAME}Dto> getAllBy${parent}Uuid(String uuid);
 				void deleteAllBy${parent}Uuid(String uuid) throws ApplicationUncheckException;
