@@ -15,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -54,7 +56,7 @@ public class ${NAME}ServiceImpl implements ${NAME}Service {
 		}
 	
 		@Override
-		public List<${NAME}Dto> search(${NAME}SearchDto searchDto, int pageNo, int pageSize) {
+		public Page<${NAME}Dto> search(${NAME}SearchDto searchDto, int pageNo, int pageSize) {
 			pageNo = Math.max(pageNo, 0); 
 			pageSize = Math.max(pageSize, 1);
 			pageSize = Math.min(Integer.parseInt(appConfig.getMaxPageSize()), pageSize);
@@ -63,7 +65,7 @@ public class ${NAME}ServiceImpl implements ${NAME}Service {
 				.filter(dto -> validator.validateSearchDto(dto))
 				.map(dto -> dtoMapper.fromSearchDto(dto))
 				.map(dto -> dataService.search(dto, pageRequest))
-				.orElse(new ArrayList<>());
+				.orElse(new PageImpl<>(new ArrayList<>()));
 		}
 
 		@Override
