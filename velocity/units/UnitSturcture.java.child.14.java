@@ -71,7 +71,7 @@ public interface ${NAME}Repository extends JpaRepository<${NAME}, Long>{
 			#end
 		#end
 	#else
-		#if($parent  && $parent != "")
+		#if($PARENT  && $PARENT != "")
 			#foreach($parent in $PARENT.split(","))
 			/******
 			*
