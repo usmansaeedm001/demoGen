@@ -13,6 +13,7 @@ import com.digitify.framework.enums.RequestType;
 import com.digitify.framework.exception.ApplicationUncheckException;
 import com.digitify.framework.face.RequestValidationAdviser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,7 +39,7 @@ public class ${NAME}Controller implements RequestValidationAdviser {
 
 	@PostMapping(path = "/search/{page-no}/{page-size}")
 	@PreAuthorize("hasAuthority('READ_${NAME.toUpperCase()}')")
-	public ResponseEntity<ApiResponse<List<${NAME}Dto>>> search${NAME}(@PathVariable("page-no") int pageNo,
+	public ResponseEntity<ApiResponse<Page<${NAME}Dto>>> search${NAME}(@PathVariable("page-no") int pageNo,
 																   @PathVariable("page-size") int pageSize,
 																   @RequestBody ${NAME}SearchDto dto) {
 	   //todo: ${NAME}UpdateDto must include only those fields for which search is allowed.
