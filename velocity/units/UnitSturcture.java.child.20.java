@@ -416,7 +416,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 					delete(dto.getUuid());
 				}
 			}
-			#if($PARENT && $PARENT != ""))
+			#if($PARENT && $PARENT != "")
 				#foreach($parent in $PARENT.split(","))
 					@Override
 					@Transactional(readOnly = true)
@@ -432,17 +432,16 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 					@Override
 					@Transactional(propagation = Propagation.REQUIRED)
 					public void deleteAllBy${parent}Uuid(String uuid) throws ApplicationUncheckException {
-							TrackCode trackCode = trackCode(RequestType.DELETE_ALL);
-							List<${NAME}> list = Stream.ofNullable(uuid)
-								.map(s -> new ArrayList<>(repository.findAllBy${parent}UuidAndIsActiveTrue(uuid)))
-								.flatMap(Collection::stream)
-								.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity)))
-								.collect(Collectors.toList());
-							if(!list.isEmpty()){
-								repository.deleteAll(list);
-							}else {
-								throw new ApplicationUncheckException(new EnumerationWrapper<>(ErrorCode.NOT_FOUND), trackCode, HttpStatus.UNPROCESSABLE_ENTITY);
-							}
+						TrackCode trackCode = trackCode(RequestType.DELETE_ALL);
+						List<${NAME}> list = Stream.ofNullable(uuid)
+							.map(s -> new ArrayList<>(repository.findAllBy${parent}UuidAndIsActiveTrue(uuid)))
+							.flatMap(Collection::stream)
+							.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity)))
+							.collect(Collectors.toList());
+						if(!list.isEmpty()){
+							repository.deleteAll(list);
+						}else {
+							throw new ApplicationUncheckException(new EnumerationWrapper<>(ErrorCode.NOT_FOUND), trackCode, HttpStatus.UNPROCESSABLE_ENTITY);
 						}
 					}
 				#end
