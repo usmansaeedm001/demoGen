@@ -293,7 +293,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 			}
 
 			@Override
-			public List<${NAME}Dto> search(${NAME}Dto dto, PageRequest pageRequest) {
+			public Page<${NAME}Dto> search(${NAME}Dto dto, PageRequest pageRequest) {
 			return Optional.ofNullable(dto)
 				.filter(dto1 -> Objects.nonNull(pageRequest))
 				.map(aDto -> {
@@ -303,12 +303,14 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 					})
 				.map(Example::of)
 				.map(example -> repository.findAll(example, pageRequest))
-				.stream()
-				.map(Slice::getContent)
-				.flatMap(Collection::stream)
-				.filter(entity -> validator.validate(entity))
-				.map(entity -> mapper.toDto(entity))
-				.collect(Collectors.toList());
+				.map(page ->new PageImpl<>(Optional.of(page)
+						.map(Slice::getContent)
+						.stream()
+						.flatMap(Collection::stream)
+						.filter(entity -> validator.validate(entity))
+						.map(entity -> mapper.toDto(entity))
+						.collect(Collectors.toList()), pageRequest, page.getTotalElements()))
+				.orElse(new PageImpl<>(new ArrayList<>()));
 			}
 
 			@Override
