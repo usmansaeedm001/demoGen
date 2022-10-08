@@ -59,8 +59,8 @@ public interface ${NAME}Repository extends JpaRepository<${NAME}, Long>{
 				**********/
 				boolean existsBy${parent}UuidAnd${principal}Uuid(String uuid, String principalUuid);
 				boolean existsBy${parent}UuidAnd${principal}UuidAndIsActiveTrue(String uuid, String principalUuid);
-				Optional<${NAME}> findBy${parent}UuidAnd${principal}Uuid(String uuid, String principalUuid);
-				Optional<${NAME}> findBy${parent}UuidAnd${principal}UuidAndIsActiveTrue(String uuid, String principalUuid);
+				Optional<${NAME}> findByUuidAnd${parent}UuidAnd${principal}Uuid(String uuid, String parentUuid, String principalUuid);
+				Optional<${NAME}> findByUuidAnd${parent}UuidAnd${principal}UuidAndIsActiveTrue(String uuid, String parentUuid, String principalUuid);
 				List<${NAME}> findAllBy${parent}UuidAnd${principal}UuidAndUuidIn(String uuid, String principalUuid, List<String> uuidList);
 				List<${NAME}> findAllBy${parent}UuidAnd${principal}UuidAndUuidInAndIsActiveTrue(String uuid, String principalUuid, List<String> uuidList);
 				List<${NAME}> findAllBy${parent}UuidAnd${principal}Uuid(String uuid, String principalUuid);
@@ -80,6 +80,8 @@ public interface ${NAME}Repository extends JpaRepository<${NAME}, Long>{
 			**********/
 					boolean existsBy${parent}Uuid(String uuid);
 					boolean existsBy${parent}UuidAndIsActiveTrue(String uuid);
+					Optional<${NAME}> findByUuidAnd${parent}Uuid(String uuid, String parentUuid);
+					Optional<${NAME}> findByUuidAnd${parent}UuidAndIsActiveTrue(String uuid, String parentUuid);
 					Optional<${NAME}> findBy${parent}Uuid(String uuid);
 					Optional<${NAME}> findBy${parent}UuidAndIsActiveTrue(String uuid);
 					List<${NAME}> findAllBy${parent}UuidAndUuidIn(String uuid, String principalUuid);
@@ -99,6 +101,8 @@ public interface ${NAME}Repository extends JpaRepository<${NAME}, Long>{
 		* Query By unique ${uniqueField}
 		*
 		**********/
+		Optional<${NAME}> findBy${uniqueField}Uuid(String unique);
+		Optional<${NAME}> findBy${uniqueField}UuidAndIsActiveTrue(String unique);
 		boolean existsBy${uniqueField}AndUuidNot(String ${uniqueFieldCamelCase}, String uuid);
 		boolean existsBy${uniqueField}AndUuidNotAndIsActiveTrue(String ${uniqueFieldCamelCase}, String uuid);
 	#end
