@@ -242,35 +242,36 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 					throw new ApplicationUncheckException(new EnumerationWrapper<>(ErrorCode.NOT_FOUND), trackCode, HttpStatus.UNPROCESSABLE_ENTITY);
 				}
 			}
-
-			#foreach($parent in $PARENT.split(","))
-				#if(${parent} != ${principal})
-						@Override
-						@Transactional(readOnly = true)
-						public List<${NAME}Dto> getAllBy${parent}Uuid(String uuid) {
-							return Stream.ofNullable(uuid)
-							.map(s ->  repository.findAllBy${parent}UuidAnd${principal}UuidAndIsActiveTrue(s, getPrincipalUuid()))
-							.flatMap(Collection::stream)
-							.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity)))
-							.map(entity -> mapper.toDto(entity))
-							.collect(Collectors.toList());
-						}
-
-						@Override
-						@Transactional(propagation = Propagation.REQUIRED)
-						public void deleteAllBy${parent}Uuid(String uuid) throws ApplicationUncheckException {
-							TrackCode trackCode = trackCode(RequestType.DELETE_ALL);
-							List<${NAME}> list = Stream.ofNullable(uuid)
-								.map(s -> repository.findAllBy${parent}UuidAnd${principal}UuidAndIsActiveTrue(uuid, getPrincipalUuid()))
+			#if($PARENT && $PARENT != "")
+				#foreach($parent in $PARENT.split(","))
+					#if(${parent} != ${principal})
+							@Override
+							@Transactional(readOnly = true)
+							public List<${NAME}Dto> getAllBy${parent}Uuid(String uuid) {
+								return Stream.ofNullable(uuid)
+								.map(s ->  repository.findAllBy${parent}UuidAnd${principal}UuidAndIsActiveTrue(s, getPrincipalUuid()))
 								.flatMap(Collection::stream)
 								.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity)))
+								.map(entity -> mapper.toDto(entity))
 								.collect(Collectors.toList());
-							if(!list.isEmpty()){
-								repository.deleteAll(list);
-							}else {
-								throw new ApplicationUncheckException(new EnumerationWrapper<>(ErrorCode.NOT_FOUND), trackCode, HttpStatus.UNPROCESSABLE_ENTITY);
 							}
-						}
+
+							@Override
+							@Transactional(propagation = Propagation.REQUIRED)
+							public void deleteAllBy${parent}Uuid(String uuid) throws ApplicationUncheckException {
+								TrackCode trackCode = trackCode(RequestType.DELETE_ALL);
+								List<${NAME}> list = Stream.ofNullable(uuid)
+									.map(s -> repository.findAllBy${parent}UuidAnd${principal}UuidAndIsActiveTrue(uuid, getPrincipalUuid()))
+									.flatMap(Collection::stream)
+									.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity)))
+									.collect(Collectors.toList());
+								if(!list.isEmpty()){
+									repository.deleteAll(list);
+								}else {
+									throw new ApplicationUncheckException(new EnumerationWrapper<>(ErrorCode.NOT_FOUND), trackCode, HttpStatus.UNPROCESSABLE_ENTITY);
+								}
+							}
+					#end
 				#end
 			#end
 	#else

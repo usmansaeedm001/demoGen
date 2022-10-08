@@ -127,6 +127,7 @@ public class ${NAME}ServiceImpl implements ${NAME}Service {
 				throw new ApplicationUncheckException(new EnumerationWrapper<>(ErrorCode.INVALID_UUID), trackCode(RequestType.DELETE_ALL));
 			}
 		}
+		#if( ${PARENT} && ${PARENT} != "")
 		#foreach($parent in $PARENT.split(","))
 		#if($parent  && $parent != "" && $parent != $principal)
 				@Override
@@ -146,6 +147,7 @@ public class ${NAME}ServiceImpl implements ${NAME}Service {
 						}
 					}
 			#end
+		#end
 		#end
 		#else
 			#if($PARENT  && $PARENT != "")

@@ -15,28 +15,29 @@ import java.io.Writer;
  * @project demoGen
  */
 public class ParentUnitGenService {
-	private static String name;
-	private static String parent;
+	private String name;
+	private String parent;
 	static String outputFileBase;
 
 	public ParentUnitGenService(String name) {
-		ParentUnitGenService.name = name;
-		parent = "";
-		outputFileBase = "src/main/java/com/digitify/ob/velo/unit/" + ParentUnitGenService.name.toLowerCase() + "/";
+		this.name = name;
+		this.parent = "ApplicationCustomer";
+		outputFileBase = "src/main/java/com/digitify/ob/velo/unit/" + this.name.toLowerCase() + "/";
 	}
 
 	private VelocityContext getVelocityContext() {
 		VelocityContext context = new VelocityContext();
-		context.put("PACKAGE_NAME", "com.digitify.ob.velo.unit." + name.toLowerCase());
-		context.put("className", name);
-		context.put("NAME", name);
+		context.put("PACKAGE_NAME", "com.digitify.ob.velo.unit." + this.name.toLowerCase());
+		context.put("className", this.name);
+		context.put("NAME", this.name);
 		context.put("Base_package", "com.digitify.ob");
-		context.put("Table_name", name.toLowerCase());
+		context.put("Table_name", this.name.toLowerCase());
 		context.put("Type_Enum_List", "Type1,Type2,Type3");
 		context.put("Status_Enum_List", "Status1,Status2,Status3");
-		context.put("Parent", parent);
+//		context.put("Parent", parent);
+		context.put("Parent", "");
 		context.put("Principal", "ApplicationCustomer");
-		context.put("Api_context_path", "/api/" + name.toLowerCase());
+		context.put("Api_context_path", "/api/" + this.name.toLowerCase());
 
 		return context;
 	}

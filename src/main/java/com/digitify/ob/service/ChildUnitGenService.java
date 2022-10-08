@@ -32,14 +32,10 @@ public class ChildUnitGenService {
 		context.put("NAME", name);
 		context.put("Base_package", "com.digitify.ob");
 		context.put("Table_name", name.toLowerCase());
-//		context.put("Type_Enum_List", "Type1,Type2,Type3");
-		context.put("Type_Enum_List", "");
-//		context.put("Status_Enum_List", "Status1,Status2,Status3");
-		context.put("Status_Enum_List", "");
+		context.put("Type_Enum_List", "Type1,Type2,Type3");
+		context.put("Status_Enum_List", "Status1,Status2,Status3");
 		context.put("Principal", "ApplicationCustomer");
-		//		context.put("Principal", "");
 		context.put("Parent", parent);
-//		context.put("Parent", "");
 		context.put("Api_context_path", "/api/" + name.toLowerCase());
 
 		return context;
