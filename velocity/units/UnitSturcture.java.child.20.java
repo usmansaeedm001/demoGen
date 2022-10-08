@@ -66,7 +66,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 	#if(${principal} && ${principal} != "")
 			@Override
 			public boolean existsByUuid(String uuid) {
-				return repository.existsByUuidAnd${principal}UuidAndIsActiveTrue(uuid, getPrincipalUuid());
+				return repository.existsByUuidAnd${principal}Uuid(uuid, getPrincipalUuid());
 			}
 
 			@Override
