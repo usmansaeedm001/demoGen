@@ -44,8 +44,9 @@ public class ${NAME}EntityValidatorImpl implements ${NAME}EntityValidator {
 	exists = exists && Optional.ofNullable(dto)
 			.map(${NAME}Dto::get${uniqueField})
 			.map(s -> repository.exists(Example.of(${NAME}.builder().${uniqueFieldCamelCase}(s).build())))
+			.filter(aBoolean -> !aBoolean)
 			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode.setLayerCode(LayerType.ENTITY_VALIDATION_LAYER),
-				"${uniqueField} already exists."));
+				"${NAME} already exists with specified ${uniqueField}."));
 	#end
 
 	#if( ${PARENT} && ${PARENT} != "")
@@ -57,7 +58,7 @@ public class ${NAME}EntityValidatorImpl implements ${NAME}EntityValidator {
 			.map(entity -> repository.exists(Example.of(entity)))
 			.filter(aBoolean -> !aBoolean)
 			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode.setLayerCode(LayerType.ENTITY_VALIDATION_LAYER),
-				"${NAME} already exists."));
+				"${NAME} already exists with specified ${parent}."));
 	#end
 	#end
 	return exists;
@@ -85,7 +86,7 @@ public class ${NAME}EntityValidatorImpl implements ${NAME}EntityValidator {
 			.map(${NameCamelCase}Dto -> repository.existsBy${uniqueField}AndUuidNot(${NameCamelCase}Dto.get${uniqueField}(), entity.getUuid()))
 			.filter(aBoolean -> !aBoolean)
 			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode.setLayerCode(LayerType.ENTITY_VALIDATION_LAYER),
-			"${uniqueField} already exists."));
+			"${NAME} already exists with specified ${uniqueField}."));
 		#end
 		#if( ${PARENT} && ${PARENT} != "")
 		#foreach($parent in $PARENT.split(","))
