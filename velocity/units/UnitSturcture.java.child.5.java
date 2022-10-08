@@ -22,15 +22,15 @@ public class ${NAME}UpdateDto {
     	@JsonProperty("${uniqueFieldCamelCase}")
     	private String ${uniqueFieldCamelCase};
 	#end
-#if( ${PARENT} && ${PARENT} != "")
-	#foreach($parent in $PARENT.split(","))
-	#if( ${principal} !=  ${parent})
-	#set($parentCamelCase = $parent.substring(0,1).toLowerCase()+$parent.substring(1))
-	@JsonProperty("${parentCamelCase}Uuid")
-	private String ${parentCamelCase}Uuid;
+	#if( ${PARENT} && ${PARENT} != "")
+		#foreach($parent in $PARENT.split(","))
+		#if( ${principal} !=  ${parent})
+		#set($parentCamelCase = $parent.substring(0,1).toLowerCase()+$parent.substring(1))
+		@JsonProperty("${parentCamelCase}Uuid")
+		private String ${parentCamelCase}Uuid;
+		#end
+		#end
 	#end
-	#end
-#end
 #end
 
 	@JsonProperty("active") private Boolean isActive;

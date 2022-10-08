@@ -27,15 +27,15 @@ public class ${NAME}CreateDto {
     	private String ${uniqueFieldCamelCase};
 	#end
     
-#if( ${PARENT} && ${PARENT} != "")
-#foreach($parent in $PARENT.split(","))
-#if( ${principal} !=  ${parent})
-	#set($parentCamelCase = $parent.substring(0,1).toLowerCase()+$parent.substring(1))
-	@JsonProperty("${parentCamelCase}Uuid")
-	private String ${parentCamelCase}Uuid;
-#end
-#end
-#end
+	#if( ${PARENT} && ${PARENT} != "")
+	#foreach($parent in $PARENT.split(","))
+	#if( ${principal} !=  ${parent})
+		#set($parentCamelCase = $parent.substring(0,1).toLowerCase()+$parent.substring(1))
+		@JsonProperty("${parentCamelCase}Uuid")
+		private String ${parentCamelCase}Uuid;
+	#end
+	#end
+	#end
 
     @JsonProperty("active") private Boolean isActive;
     

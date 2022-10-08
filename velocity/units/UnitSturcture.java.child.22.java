@@ -41,7 +41,7 @@ public class ${NAME}EntityValidatorImpl implements ${NAME}EntityValidator {
 	#if(${uniqueField} && ${uniqueField} != "")
 	exists = exists && Optional.ofNullable(dto)
 			.map(${NAME}Dto::get${uniqueField})
-			.map(s -> repository.exists(Example.of(${NAME}.builder().${uniqueFieldCamelCase}(s).isActive(true).build())))
+			.map(s -> repository.exists(Example.of(${NAME}.builder().${uniqueFieldCamelCase}(s).build())))
 			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode(RequestType.NOOP),
 				"${uniqueField} already exists."));
 	#end
@@ -86,8 +86,8 @@ public class ${NAME}EntityValidatorImpl implements ${NAME}EntityValidator {
 			"${uniqueField} already exists."));
 		#end
 		#if( ${PARENT} && ${PARENT} != "")
-#foreach($parent in $PARENT.split(","))
-	#set($parentCamelCase = $parent.substring(0,1).toLowerCase()+$parent.substring(1))
+		#foreach($parent in $PARENT.split(","))
+		#set($parentCamelCase = $parent.substring(0,1).toLowerCase()+$parent.substring(1))
 		exists = exists && Optional.ofNullable(dto)
 			.filter(dto1 -> StringUtils.hasLength(dto1.get${parent}Uuid()))
 			.filter(dto1 -> Objects.nonNull(entity))

@@ -28,12 +28,14 @@ public interface ${NAME}Service extends IService<${NAME}Dto, ${NAME}CreateDto, $
 		#if(${principal} && ${principal} != "")
 			List<${NAME}Dto> getAllBy${principal}Uuid(String uuid);
 			void deleteAllBy${principal}Uuid(String uuid) throws ApplicationUncheckException;
+			#if(${PARENT} && ${PARENT} != "")
 			#foreach($parent in $PARENT.split(","))
 			#if($parent  && $parent != "" && $parent != $principal)
 				List<${NAME}Dto> getAllBy${parent}Uuid(String uuid);
 				void deleteAllBy${parent}Uuid(String uuid) throws ApplicationUncheckException;
 			#end
-		#end
+			#end
+			#end
 		#else
 			#if($PARENT  && $PARENT != "")
 				#foreach($parent in $PARENT.split(","))

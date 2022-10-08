@@ -49,7 +49,7 @@ public interface ${NAME}Repository extends JpaRepository<${NAME}, Long>{
 		#set($principalCamelCase = $principal.substring(0,1).toLowerCase()+$principal.substring(1))
 		Boolean existsBy${principal}UuidAndUuidNot(String ${principalCamelCase}Uuid, String uuid);
 		Boolean existsBy${principal}UuidAndUuidNotAndIsActiveTrue(String ${principalCamelCase}Uuid, String uuid);
-
+		#if(${PARENT} && ${PARENT} != "")
 		#foreach($parent in $PARENT.split(","))
 			#if($parent  && $parent != "" && $parent != $principal)
 				/******
@@ -69,6 +69,7 @@ public interface ${NAME}Repository extends JpaRepository<${NAME}, Long>{
 				Boolean existsBy${parent}UuidAndUuidNot(String ${parentCamelCase}Uuid, String uuid);
 				Boolean existsBy${parent}UuidAndUuidNotAndIsActiveTrue(String ${parentCamelCase}Uuid, String uuid);
 			#end
+		#end
 		#end
 	#else
 		#if($PARENT  && $PARENT != "")

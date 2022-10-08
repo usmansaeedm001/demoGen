@@ -242,7 +242,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 					throw new ApplicationUncheckException(new EnumerationWrapper<>(ErrorCode.NOT_FOUND), trackCode, HttpStatus.UNPROCESSABLE_ENTITY);
 				}
 			}
-
+			#if(${PARENT} && ${PARENT} != "")
 			#foreach($parent in $PARENT.split(","))
 				#if(${parent} != ${principal})
 						@Override
@@ -272,6 +272,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 							}
 						}
 				#end
+			#end
 			#end
 	#else
 			@Override

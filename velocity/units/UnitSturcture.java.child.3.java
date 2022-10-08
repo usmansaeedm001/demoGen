@@ -1,4 +1,6 @@
 #set($PARENT = ${Parent})
+#set($principal = ${Principal})
+#set($principalCamelCase = $principal.substring(0,1).toLowerCase()+$principal.substring(1))
 #set($uniqueField = ${Unique_field})
 #if (${PACKAGE_NAME} && ${PACKAGE_NAME} != "")package ${PACKAGE_NAME};#end
 
@@ -27,14 +29,18 @@ public class ${NAME}SearchDto {
     	private String ${uniqueFieldCamelCase};
 	#end
 
-    #if( ${PARENT} && ${PARENT} != "")
-	#foreach($parent in $PARENT.split(","))
-	#if( ${principal} !=  ${parent})
-	#set($parentCamelCase = $parent.substring(0,1).toLowerCase()+$parent.substring(1))
-		@JsonProperty("${parentCamelCase}Uuid")
-		private String ${parentCamelCase}Uuid;
-	#end
-	#end
+	#if( ${principal} && ${principal} != "" )
+		@JsonProperty("${principalCamelCase}Uuid")
+		private String ${principalCamelCase}Uuid;
+    	#if( ${PARENT} && ${PARENT} != "")
+			#foreach($parent in $PARENT.split(","))
+			#if( ${principal} !=  ${parent})
+			#set($parentCamelCase = $parent.substring(0,1).toLowerCase()+$parent.substring(1))
+				@JsonProperty("${parentCamelCase}Uuid")
+				private String ${parentCamelCase}Uuid;
+			#end
+			#end
+		#end
 	#end
 
 	@JsonProperty("active") private Boolean isActive;
