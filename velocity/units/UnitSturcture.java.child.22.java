@@ -110,7 +110,7 @@ public class ${NAME}EntityValidatorImpl implements ${NAME}EntityValidator {
 		if (dto != null && StringUtils.hasLength(dto.get${uniqueField}())) {
 			if (repository.existsBy${uniqueField}AndUuidNot(dto.get${uniqueField}(), entity.getUuid())) {
 				throw new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode.setLayerCode(LayerType.ENTITY_VALIDATION_LAYER),
-			"${uniqueField} already exists.");
+			"${NAME} already exists with specified ${uniqueField}."));
 			}
 		}
 		#end
