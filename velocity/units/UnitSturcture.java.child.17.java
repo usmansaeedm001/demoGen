@@ -148,7 +148,7 @@ public class ${NAME}ServiceImpl implements ${NAME}Service {
 			#end
 		#end
 		#else
-			#if($parent  && $parent != "")
+			#if($PARENT  && $PARENT != "")
 				#foreach($parent in $PARENT.split(","))
 					@Override
 					public List<${NAME}Dto> getAllBy${parent}Uuid(String uuid) {

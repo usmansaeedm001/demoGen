@@ -44,7 +44,7 @@ public interface ${NAME}Repository extends JpaRepository<${NAME}, Long>{
 			#end
 		#end
 	#else
-		#if($parent  && $parent != "")
+		#if($PARENT  && $PARENT != "")
 			#foreach($parent in $PARENT.split(","))
 					boolean existsBy${parent}UuidAndIsActiveTrue(String uuid);
 					Optional<${NAME}> findBy${parent}UuidAndIsActiveTrue(String uuid);
