@@ -18,7 +18,7 @@ import java.util.Optional;
 * @project $PROJECT_NAME
 * @author ${USER}
 */
-public interface BankAccountEntityValidator extends EntityValidator<BankAccountDto, BankAccount>  {
+interface BankAccountEntityValidator extends EntityValidator<BankAccountDto, BankAccount>  {
 	default TrackCode trackCode(RequestType requestType) {
 		return TrackCode.with(ApiType.UNIT)
 			.with(requestType)

@@ -1,5 +1,7 @@
 package com.digitify.ob.velo.unit.applicationcustomer;
 import com.digitify.ob.enums.ErrorCode;
+import com.digitify.framework.handler.TrackCode;
+import com.digitify.framework.enums.LayerType;
 import com.digitify.framework.annotation.ValidationComponent;
 import com.digitify.framework.dto.EnumerationWrapper;
 import com.digitify.framework.enums.RequestType;
@@ -33,12 +35,12 @@ public class ApplicationCustomerEntityValidatorImpl implements ApplicationCustom
 	}
 
 	@Override
-	public Boolean validateDto(ApplicationCustomerDto dto) throws BusinessValidationException {
+	public Boolean validateDto(ApplicationCustomerDto dto, TrackCode trackCode) throws BusinessValidationException {
 	Boolean exists = true;
 		exists = exists && Optional.ofNullable(dto)
 			.map(ApplicationCustomerDto::getParentNumber)
 			.map(s -> repository.exists(Example.of(ApplicationCustomer.builder().parentNumber(s).build())))
-			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode(RequestType.NOOP),
+			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode.setLayerCode(LayerType.ENTITY_VALIDATION_LAYER),
 				"ParentNumber already exists."));
 	
 		return exists;
@@ -46,35 +48,35 @@ public class ApplicationCustomerEntityValidatorImpl implements ApplicationCustom
 	}
 
 	@Override
-	public Boolean validate(ApplicationCustomer entity) throws BusinessValidationException {
+	public Boolean validate(ApplicationCustomer entity, TrackCode trackCode) throws BusinessValidationException {
 		return true;
 
 	}
 
 	@Override
-	public Boolean validate(List<ApplicationCustomer> entityList) throws BusinessValidationException {
+	public Boolean validate(List<ApplicationCustomer> entityList, TrackCode trackCode) throws BusinessValidationException {
 		return true;
 	}
 
 	@Override
-	public Boolean validate(ApplicationCustomerDto dto, ApplicationCustomer entity) throws BusinessValidationException {
+	public Boolean validate(ApplicationCustomerDto dto, ApplicationCustomer entity, TrackCode trackCode) throws BusinessValidationException {
 		Boolean exists = true;
 				exists = exists && Optional.ofNullable(dto)
 			.filter(applicationCustomerDto -> StringUtils.hasLength(applicationCustomerDto.getParentNumber()))
 			.filter(applicationCustomerDto -> Objects.nonNull(entity))
 			.map(applicationCustomerDto -> repository.existsByParentNumberAndUuidNot(applicationCustomerDto.getParentNumber(), entity.getUuid()))
 			.filter(aBoolean -> !aBoolean)
-			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode(RequestType.POST),
+			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode.setLayerCode(LayerType.ENTITY_VALIDATION_LAYER),
 			"ParentNumber already exists."));
 						return exists;
 	}
 
 	@Override
-	public Boolean validatePartialUpdate(ApplicationCustomerDto dto, ApplicationCustomer entity) throws BusinessValidationException {
+	public Boolean validatePartialUpdate(ApplicationCustomerDto dto, ApplicationCustomer entity, TrackCode trackCode) throws BusinessValidationException {
 		boolean exists = true;
 				if (dto != null && StringUtils.hasLength(dto.getParentNumber())) {
 			if (repository.existsByParentNumberAndUuidNot(dto.getParentNumber(), entity.getUuid())) {
-				throw new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode(RequestType.PATCH),
+				throw new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode.setLayerCode(LayerType.ENTITY_VALIDATION_LAYER),
 			"ParentNumber already exists.");
 			}
 		}

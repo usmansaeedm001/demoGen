@@ -6,6 +6,8 @@
 #if (${PACKAGE_NAME} && ${PACKAGE_NAME} != "")package ${PACKAGE_NAME};#end
 
 import ${basePackage}.enums.ErrorCode;
+import com.digitify.framework.handler.TrackCode;
+import com.digitify.framework.enums.LayerType;
 import com.digitify.framework.annotation.ValidationComponent;
 import com.digitify.framework.dto.EnumerationWrapper;
 import com.digitify.framework.enums.RequestType;
@@ -36,13 +38,13 @@ public class ${NAME}EntityValidatorImpl implements ${NAME}EntityValidator {
 	}
 
 	@Override
-	public Boolean validateDto(${NAME}Dto dto) throws BusinessValidationException {
+	public Boolean validateDto(${NAME}Dto dto, TrackCode trackCode) throws BusinessValidationException {
 	Boolean exists = true;
 	#if(${uniqueField} && ${uniqueField} != "")
 	exists = exists && Optional.ofNullable(dto)
 			.map(${NAME}Dto::get${uniqueField})
 			.map(s -> repository.exists(Example.of(${NAME}.builder().${uniqueFieldCamelCase}(s).build())))
-			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode(RequestType.NOOP),
+			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode.setLayerCode(LayerType.ENTITY_VALIDATION_LAYER),
 				"${uniqueField} already exists."));
 	#end
 
@@ -54,7 +56,7 @@ public class ${NAME}EntityValidatorImpl implements ${NAME}EntityValidator {
 			.map(s -> ${NAME}.builder().${parentCamelCase}Uuid(s).build())
 			.map(entity -> repository.exists(Example.of(entity)))
 			.filter(aBoolean -> !aBoolean)
-			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode(RequestType.POST),
+			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode.setLayerCode(LayerType.ENTITY_VALIDATION_LAYER),
 				"${NAME} already exists."));
 	#end
 	#end
@@ -63,18 +65,18 @@ public class ${NAME}EntityValidatorImpl implements ${NAME}EntityValidator {
 	}
 
 	@Override
-	public Boolean validate(${NAME} entity) throws BusinessValidationException {
+	public Boolean validate(${NAME} entity, TrackCode trackCode) throws BusinessValidationException {
 		return true;
 
 	}
 
 	@Override
-	public Boolean validate(List<${NAME}> entityList) throws BusinessValidationException {
+	public Boolean validate(List<${NAME}> entityList, TrackCode trackCode) throws BusinessValidationException {
 		return true;
 	}
 
 	@Override
-	public Boolean validate(${NAME}Dto dto, ${NAME} entity) throws BusinessValidationException {
+	public Boolean validate(${NAME}Dto dto, ${NAME} entity, TrackCode trackCode) throws BusinessValidationException {
 		Boolean exists = true;
 		#if(${uniqueField} && ${uniqueField} != "")
 		exists = exists && Optional.ofNullable(dto)
@@ -82,7 +84,7 @@ public class ${NAME}EntityValidatorImpl implements ${NAME}EntityValidator {
 			.filter(${NameCamelCase}Dto -> Objects.nonNull(entity))
 			.map(${NameCamelCase}Dto -> repository.existsBy${uniqueField}AndUuidNot(${NameCamelCase}Dto.get${uniqueField}(), entity.getUuid()))
 			.filter(aBoolean -> !aBoolean)
-			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode(RequestType.POST),
+			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode.setLayerCode(LayerType.ENTITY_VALIDATION_LAYER),
 			"${uniqueField} already exists."));
 		#end
 		#if( ${PARENT} && ${PARENT} != "")
@@ -93,7 +95,7 @@ public class ${NAME}EntityValidatorImpl implements ${NAME}EntityValidator {
 			.filter(dto1 -> Objects.nonNull(entity))
 			.map(dto1 -> repository.existsBy${parent}UuidAndUuidNot(dto1.get${parent}Uuid(), entity.getUuid()))
 			.filter(aBoolean -> !aBoolean)
-			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode(RequestType.NOOP),
+			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode.setLayerCode(LayerType.ENTITY_VALIDATION_LAYER),
 			"${NAME} already exists."));
 		#end
 		#end
@@ -101,12 +103,12 @@ public class ${NAME}EntityValidatorImpl implements ${NAME}EntityValidator {
 	}
 
 	@Override
-	public Boolean validatePartialUpdate(${NAME}Dto dto, ${NAME} entity) throws BusinessValidationException {
+	public Boolean validatePartialUpdate(${NAME}Dto dto, ${NAME} entity, TrackCode trackCode) throws BusinessValidationException {
 		boolean exists = true;
 		#if(${uniqueField} && ${uniqueField} != "")
 		if (dto != null && StringUtils.hasLength(dto.get${uniqueField}())) {
 			if (repository.existsBy${uniqueField}AndUuidNot(dto.get${uniqueField}(), entity.getUuid())) {
-				throw new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode(RequestType.PATCH),
+				throw new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode.setLayerCode(LayerType.ENTITY_VALIDATION_LAYER),
 			"${uniqueField} already exists.");
 			}
 		}
@@ -117,7 +119,7 @@ public class ${NAME}EntityValidatorImpl implements ${NAME}EntityValidator {
 		#set($parentCamelCase = $parent.substring(0,1).toLowerCase()+$parent.substring(1))
 		if (dto != null && StringUtils.hasLength(dto.get${parent}Uuid())) {
 			if (repository.existsBy${parent}UuidAndUuidNot(dto.get${parent}Uuid(), entity.getUuid())) {
-				throw new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode(RequestType.PATCH),
+				throw new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode.setLayerCode(LayerType.ENTITY_VALIDATION_LAYER),
 				"${NAME} already exists.");
 			}
 		}

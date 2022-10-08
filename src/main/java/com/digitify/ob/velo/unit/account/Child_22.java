@@ -1,5 +1,7 @@
 package com.digitify.ob.velo.unit.account;
 import com.digitify.ob.enums.ErrorCode;
+import com.digitify.framework.handler.TrackCode;
+import com.digitify.framework.enums.LayerType;
 import com.digitify.framework.annotation.ValidationComponent;
 import com.digitify.framework.dto.EnumerationWrapper;
 import com.digitify.framework.enums.RequestType;
@@ -33,12 +35,12 @@ public class AccountEntityValidatorImpl implements AccountEntityValidator {
 	}
 
 	@Override
-	public Boolean validateDto(AccountDto dto) throws BusinessValidationException {
+	public Boolean validateDto(AccountDto dto, TrackCode trackCode) throws BusinessValidationException {
 	Boolean exists = true;
 		exists = exists && Optional.ofNullable(dto)
 			.map(AccountDto::getChildNumber)
 			.map(s -> repository.exists(Example.of(Account.builder().childNumber(s).build())))
-			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode(RequestType.NOOP),
+			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode.setLayerCode(LayerType.ENTITY_VALIDATION_LAYER),
 				"ChildNumber already exists."));
 	
 					exists = exists && Optional.ofNullable(dto)
@@ -46,56 +48,56 @@ public class AccountEntityValidatorImpl implements AccountEntityValidator {
 			.map(s -> Account.builder().applicationCustomerUuid(s).build())
 			.map(entity -> repository.exists(Example.of(entity)))
 			.filter(aBoolean -> !aBoolean)
-			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode(RequestType.POST),
+			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode.setLayerCode(LayerType.ENTITY_VALIDATION_LAYER),
 				"Account already exists."));
 			return exists;
 		
 	}
 
 	@Override
-	public Boolean validate(Account entity) throws BusinessValidationException {
+	public Boolean validate(Account entity, TrackCode trackCode) throws BusinessValidationException {
 		return true;
 
 	}
 
 	@Override
-	public Boolean validate(List<Account> entityList) throws BusinessValidationException {
+	public Boolean validate(List<Account> entityList, TrackCode trackCode) throws BusinessValidationException {
 		return true;
 	}
 
 	@Override
-	public Boolean validate(AccountDto dto, Account entity) throws BusinessValidationException {
+	public Boolean validate(AccountDto dto, Account entity, TrackCode trackCode) throws BusinessValidationException {
 		Boolean exists = true;
 				exists = exists && Optional.ofNullable(dto)
 			.filter(accountDto -> StringUtils.hasLength(accountDto.getChildNumber()))
 			.filter(accountDto -> Objects.nonNull(entity))
 			.map(accountDto -> repository.existsByChildNumberAndUuidNot(accountDto.getChildNumber(), entity.getUuid()))
 			.filter(aBoolean -> !aBoolean)
-			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode(RequestType.POST),
+			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode.setLayerCode(LayerType.ENTITY_VALIDATION_LAYER),
 			"ChildNumber already exists."));
 								exists = exists && Optional.ofNullable(dto)
 			.filter(dto1 -> StringUtils.hasLength(dto1.getApplicationCustomerUuid()))
 			.filter(dto1 -> Objects.nonNull(entity))
 			.map(dto1 -> repository.existsByApplicationCustomerUuidAndUuidNot(dto1.getApplicationCustomerUuid(), entity.getUuid()))
 			.filter(aBoolean -> !aBoolean)
-			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode(RequestType.NOOP),
+			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode.setLayerCode(LayerType.ENTITY_VALIDATION_LAYER),
 			"Account already exists."));
 						return exists;
 	}
 
 	@Override
-	public Boolean validatePartialUpdate(AccountDto dto, Account entity) throws BusinessValidationException {
+	public Boolean validatePartialUpdate(AccountDto dto, Account entity, TrackCode trackCode) throws BusinessValidationException {
 		boolean exists = true;
 				if (dto != null && StringUtils.hasLength(dto.getChildNumber())) {
 			if (repository.existsByChildNumberAndUuidNot(dto.getChildNumber(), entity.getUuid())) {
-				throw new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode(RequestType.PATCH),
+				throw new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode.setLayerCode(LayerType.ENTITY_VALIDATION_LAYER),
 			"ChildNumber already exists.");
 			}
 		}
 				
 						if (dto != null && StringUtils.hasLength(dto.getApplicationCustomerUuid())) {
 			if (repository.existsByApplicationCustomerUuidAndUuidNot(dto.getApplicationCustomerUuid(), entity.getUuid())) {
-				throw new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode(RequestType.PATCH),
+				throw new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode.setLayerCode(LayerType.ENTITY_VALIDATION_LAYER),
 				"Account already exists.");
 			}
 		}

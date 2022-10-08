@@ -72,15 +72,17 @@ public class ApplicationCustomerDataServiceImpl implements ApplicationCustomerDa
 			@Override
 			@Transactional(readOnly = true)
 			public Optional<ApplicationCustomerDto> getByUuid(String uuid) {
+				TrackCode trackCode = trackCode(RequestType.GET);
 				return Optional.ofNullable(uuid)
 					.filter(StringUtils::hasLength)
 					.flatMap(s -> repository.findByUuidAndIsActiveTrue(s))
-					.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity)))
+					.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity, trackCode)))
 					.map(entity -> mapper.toDto(entity));
 			}
 
 			@Override
 			public Page<ApplicationCustomerDto> search(ApplicationCustomerDto dto, PageRequest pageRequest) {
+			TrackCode trackCode = trackCode(RequestType.SEARCH);
 			return Optional.ofNullable(dto)
 				.filter(dto1 -> Objects.nonNull(pageRequest))
 				.map(aDto -> {
@@ -94,7 +96,7 @@ public class ApplicationCustomerDataServiceImpl implements ApplicationCustomerDa
 						.map(Slice::getContent)
 						.stream()
 						.flatMap(Collection::stream)
-						.filter(entity -> validator.validate(entity))
+						.filter(entity -> validator.validate(entity, trackCode))
 						.map(entity -> mapper.toDto(entity))
 						.collect(Collectors.toList()), pageRequest, page.getTotalElements()))
 				.orElse(new PageImpl<>(new ArrayList<>()));
@@ -102,14 +104,14 @@ public class ApplicationCustomerDataServiceImpl implements ApplicationCustomerDa
 
 			@Override
 			public Optional<ApplicationCustomerDto> save(ApplicationCustomerDto dto) throws ApplicationUncheckException {
+				TrackCode trackCode = trackCode(RequestType.POST);
 				return Optional.ofNullable(dto)
 					.map(Rethrow.rethrowFunction(this::prepareEntityToSave))
-					.map(entity -> repository.save(entity))
+					.map(entity -> repository.save(entity, trackCode))
 					.map(entity -> mapper.toDto(entity));
 			}
 
-			private ApplicationCustomer prepareEntityToSave(ApplicationCustomerDto dto) throws ApplicationUncheckException {
-				TrackCode trackCode = trackCode(RequestType.POST);
+			private ApplicationCustomer prepareEntityToSave(ApplicationCustomerDto dto, TrackCode trackCode) throws ApplicationUncheckException {
 				if (dto == null) {
 					throw new ApplicationUncheckException(new EnumerationWrapper<>(ErrorCode.INVALID_REQUEST), trackCode, HttpStatus.UNPROCESSABLE_ENTITY);
 				}
@@ -117,7 +119,7 @@ public class ApplicationCustomerDataServiceImpl implements ApplicationCustomerDa
 					.map(ApplicationCustomerDto::getUuid)
 					.filter(StringUtils::hasLength)
 					.flatMap(dtoUuid -> repository.findByUuid(dtoUuid))
-					.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity)));
+					.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity, trackCode)));
 				if (optionalEntity.isPresent()) {
 					throw new ApplicationUncheckException(new EnumerationWrapper<>(ErrorCode.INVALID_REQUEST), trackCode, HttpStatus.UNPROCESSABLE_ENTITY);
 				}
@@ -128,24 +130,24 @@ public class ApplicationCustomerDataServiceImpl implements ApplicationCustomerDa
 			@Transactional(propagation = Propagation.REQUIRED)
 			public List<ApplicationCustomerDto> save(List<ApplicationCustomerDto> list) throws ApplicationUncheckException {
 				TrackCode trackCode = trackCode(RequestType.POST_ALL);
-				return processList(list, trackCode, Rethrow.rethrowFunction(this::prepareEntityToUpdate));
+				return processList(list, trackCode, Rethrow.rethrowFunction(aDto -> prepareEntityToSave(aDto, trackCode)));
 			}
 
 			@Override
 			public Optional<ApplicationCustomerDto> update(ApplicationCustomerDto dto) throws ApplicationUncheckException {
+				TrackCode trackCode = trackCode(RequestType.PUT);
 				return Optional.ofNullable(dto)
-					.map(Rethrow.rethrowFunction(this::prepareEntityToUpdate))
+					.map(Rethrow.rethrowFunction(aDto -> prepareEntityToUpdate(aDto, trackCode)))
 					.map(entity -> repository.save(entity))
 					.map(entity -> mapper.toDto(entity));
 			}
 
-			private ApplicationCustomer prepareEntityToUpdate(ApplicationCustomerDto dto) throws ApplicationUncheckException {
-				TrackCode trackCode = trackCode(RequestType.PUT);
+			private ApplicationCustomer prepareEntityToUpdate(ApplicationCustomerDto dto, TrackCode trackCode) throws ApplicationUncheckException {
 				return Optional.of(dto)
 					.map(ApplicationCustomerDto::getUuid)
 					.filter(StringUtils::hasLength)
 					.flatMap(dtoUuid -> repository.findByUuidAndIsActiveTrue(dtoUuid))
-					.filter(Rethrow.rethrowPredicate(entity -> validator.validate(dto, entity)))
+					.filter(Rethrow.rethrowPredicate(entity -> validator.validate(dto, entity, trackCode)))
 					.map(entity -> mapper.update(dto, entity))
 					.orElseThrow(() -> new ApplicationUncheckException(new EnumerationWrapper<>(ErrorCode.NOT_FOUND), trackCode, HttpStatus.UNPROCESSABLE_ENTITY));
 			}
@@ -154,13 +156,14 @@ public class ApplicationCustomerDataServiceImpl implements ApplicationCustomerDa
 			@Transactional(propagation = Propagation.REQUIRED)
 			public List<ApplicationCustomerDto> update(List<ApplicationCustomerDto> list) throws ApplicationUncheckException {
 				TrackCode trackCode = trackCode(RequestType.PUT_ALL);
-				return processList(list, trackCode, Rethrow.rethrowFunction(this::prepareEntityToUpdate));
+				return processList(list, trackCode, Rethrow.rethrowFunction(aDto -> prepareEntityToUpdate(aDto, trackCode)));
 			}
 
 			@Override
 			public Optional<ApplicationCustomerDto> partialUpdate(ApplicationCustomerDto dto) throws ApplicationUncheckException {
+				TrackCode trackCode = trackCode(RequestType.PATCH);
 				return Optional.ofNullable(dto)
-					.map(Rethrow.rethrowFunction(this::prepareEntityToPartialUpdate))
+					.map(Rethrow.rethrowFunction(aDto -> prepareEntityToPartialUpdate(aDto, trackCode)))
 					.map(entity -> repository.save(entity))
 					.map(entity -> mapper.toDto(entity));
 			}
@@ -171,7 +174,7 @@ public class ApplicationCustomerDataServiceImpl implements ApplicationCustomerDa
 					.map(ApplicationCustomerDto::getUuid)
 					.filter(StringUtils::hasLength)
 					.flatMap(dtoUuid -> repository.findByUuidAndIsActiveTrue(dtoUuid))
-					.filter(Rethrow.rethrowPredicate(entity -> validator.validatePartialUpdate(dto, entity)))
+					.filter(Rethrow.rethrowPredicate(entity -> validator.validatePartialUpdate(dto, entity, trackCode)))
 					.map(entity -> mapper.partialUpdate(dto, entity))
 					.orElseThrow(() -> new ApplicationUncheckException(new EnumerationWrapper<>(ErrorCode.NOT_FOUND), trackCode, HttpStatus.UNPROCESSABLE_ENTITY));
 			}
@@ -180,7 +183,7 @@ public class ApplicationCustomerDataServiceImpl implements ApplicationCustomerDa
 			@Transactional(propagation = Propagation.REQUIRED)
 			public List<ApplicationCustomerDto> partialUpdate(List<ApplicationCustomerDto> list) throws ApplicationUncheckException {
 				TrackCode trackCode = trackCode(RequestType.PATCH);
-				return processList(list, trackCode, Rethrow.rethrowFunction(this::prepareEntityToPartialUpdate));
+				return processList(list, trackCode, Rethrow.rethrowFunction(aDto -> prepareEntityToPartialUpdate(aDto, trackCode));
 			}
 
 			@Override
@@ -189,7 +192,7 @@ public class ApplicationCustomerDataServiceImpl implements ApplicationCustomerDa
 				Optional<ApplicationCustomer> optionalEntity = Optional.ofNullable(uuid)
 				.filter(StringUtils::hasLength)
 				.flatMap(s -> repository.findByUuidAndIsActiveTrue(s))
-				.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity)));
+				.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity, trackCode)));
 				if (optionalEntity.isPresent()) {
 					repository.delete(optionalEntity.get());
 				} else {

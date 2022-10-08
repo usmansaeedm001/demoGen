@@ -72,15 +72,17 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 			@Override
 			@Transactional(readOnly = true)
 			public Optional<${NAME}Dto> getByUuid(String uuid) {
+				TrackCode trackCode = trackCode(RequestType.GET);
 				return Optional.ofNullable(uuid)
 					.filter(StringUtils::hasLength)
 					.flatMap(s -> repository.findByUuidAnd${principal}UuidAndIsActiveTrue(s, getPrincipalUuid()))
-					.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity)))
+					.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity, trackCode)))
 					.map(entity -> mapper.toDto(entity));
 			}
 
 			@Override
 			public Page<${NAME}Dto> search(${NAME}Dto dto, PageRequest pageRequest) {
+				TrackCode trackCode = trackCode(RequestType.SEARCH);
 				return Optional.ofNullable(dto)
 					.filter(dto1 -> Objects.nonNull(pageRequest))
 					.map(aDto -> {
@@ -95,7 +97,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 							.map(Slice::getContent)
 							.stream()
 							.flatMap(Collection::stream)
-							.filter(entity -> validator.validate(entity))
+							.filter(entity -> validator.validate(entity, trackCode))
 							.map(entity -> mapper.toDto(entity))
 							.collect(Collectors.toList()), pageRequest, page.getTotalElements()))
 					.orElse(new PageImpl<>(new ArrayList<>()));
@@ -103,25 +105,24 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 
 			@Override
 			public Optional<${NAME}Dto> save(${NAME}Dto dto) throws ApplicationUncheckException {
+				TrackCode trackCode = trackCode(RequestType.POST);
 				return Optional.ofNullable(dto)
-					.map(Rethrow.rethrowFunction(this::prepareEntityToSave))
+					.map(Rethrow.rethrowFunction(aDto -> prepareEntityToSave(dto, trackCode)))
 					.map(entity -> repository.save(entity))
 					.map(entity -> mapper.toDto(entity));
 			}
 
-			private ${NAME} prepareEntityToSave(${NAME}Dto dto) throws ApplicationUncheckException {
-				TrackCode trackCode = trackCode(RequestType.POST);
+			private ${NAME} prepareEntityToSave(${NAME}Dto dto, TrackCode trackCode) throws ApplicationUncheckException {
 				if (dto == null) {
 					throw new ApplicationUncheckException(new EnumerationWrapper<>(ErrorCode.INVALID_REQUEST), trackCode, HttpStatus.UNPROCESSABLE_ENTITY);
 				}
 				Optional<${NAME}> optionalEntity = Optional.of(dto)
-				.filter(userCardDto -> validator.validateDto(dto))
 					.filter(aDto -> validator.validatePrincipalUuid(aDto.get${principal}Uuid(), ErrorCode.NOT_AUTHORIZED, trackCode))
-					.filter(aDto -> validator.validateDto(aDto))
+					.filter(aDto -> validator.validateDto(aDto, trackCode))
 					.map(${NAME}Dto::getUuid)
 					.filter(StringUtils::hasLength)
 					.flatMap(dtoUuid -> repository.findByUuidAnd${principal}Uuid(dtoUuid, getPrincipalUuid()))
-					.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity)));
+					.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity, trackCode)));
 				if (optionalEntity.isPresent()) {
 					throw new ApplicationUncheckException(new EnumerationWrapper<>(ErrorCode.INVALID_REQUEST), trackCode, HttpStatus.UNPROCESSABLE_ENTITY);
 				}
@@ -132,25 +133,26 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 			@Transactional(propagation = Propagation.REQUIRED)
 			public List<${NAME}Dto> save(List<${NAME}Dto> list) throws ApplicationUncheckException {
 				TrackCode trackCode = trackCode(RequestType.POST_ALL);
-				return processList(list, trackCode, Rethrow.rethrowFunction(this::prepareEntityToSave));
+				return processList(list, trackCode, Rethrow.rethrowFunction(aDto -> prepareEntityToSave(aDto, trackCode)));
 			}
 
 			@Override
 			public Optional<${NAME}Dto> update(${NAME}Dto dto) throws ApplicationUncheckException {
+				TrackCode trackCode = trackCode(RequestType.PUT);
 				return Optional.ofNullable(dto)
-					.map(Rethrow.rethrowFunction(this::prepareEntityToUpdate))
+					.map(Rethrow.rethrowFunction(aDto -> prepareEntityToUpdate(aDto, trackCode)))
 					.map(entity -> repository.save(entity))
 					.map(entity -> mapper.toDto(entity));
 			}
 
-			private ${NAME} prepareEntityToUpdate(${NAME}Dto dto) throws ApplicationUncheckException {
-				TrackCode trackCode = trackCode(RequestType.PUT);
+			private ${NAME} prepareEntityToUpdate(${NAME}Dto dto, TrackCode trackCode) throws ApplicationUncheckException {
+
 				return Optional.of(dto)
 					.filter(aDto -> validator.validatePrincipalUuid(aDto.get${principal}Uuid(), ErrorCode.NOT_AUTHORIZED, trackCode))
 					.map(${NAME}Dto::getUuid)
 					.filter(StringUtils::hasLength)
 					.flatMap(dtoUuid -> repository.findByUuidAnd${principal}UuidAndIsActiveTrue(dtoUuid, getPrincipalUuid()))
-					.filter(Rethrow.rethrowPredicate(entity -> validator.validate(dto, entity)))
+					.filter(Rethrow.rethrowPredicate(entity -> validator.validate(dto, entity, trackCode)))
 					.map(entity -> mapper.update(dto, entity))
 					.orElseThrow(() -> new ApplicationUncheckException(new EnumerationWrapper<>(ErrorCode.NOT_FOUND), trackCode, HttpStatus.UNPROCESSABLE_ENTITY));
 			}
@@ -159,25 +161,26 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 			@Transactional(propagation = Propagation.REQUIRED)
 			public List<${NAME}Dto> update(List<${NAME}Dto> list) throws ApplicationUncheckException {
 				TrackCode trackCode = trackCode(RequestType.PUT_ALL);
-				return processList(list, trackCode, Rethrow.rethrowFunction(this::prepareEntityToUpdate));
+				return processList(list, trackCode, Rethrow.rethrowFunction(aDto -> prepareEntityToUpdate(aDto, trackCode)));
 			}
 
 			@Override
 			public Optional<${NAME}Dto> partialUpdate(${NAME}Dto dto) throws ApplicationUncheckException {
+				TrackCode trackCode = trackCode(RequestType.PATCH);
 				return Optional.ofNullable(dto)
-					.map(Rethrow.rethrowFunction(this::prepareEntityToPartialUpdate))
+					.map(Rethrow.rethrowFunction(aDto -> prepareEntityToPartialUpdate(aDto, trackCode)))
 					.map(entity -> repository.save(entity))
 					.map(entity -> mapper.toDto(entity));
 			}
 
-			private ${NAME} prepareEntityToPartialUpdate(${NAME}Dto dto) throws ApplicationUncheckException {
-				TrackCode trackCode = trackCode(RequestType.PATCH);
+			private ${NAME} prepareEntityToPartialUpdate(${NAME}Dto dto, TrackCode trackCode) throws ApplicationUncheckException {
+
 				return Optional.ofNullable(dto)
 					.filter(aDto -> validator.validatePrincipalIfPresent(aDto.get${principal}Uuid(), ErrorCode.NOT_AUTHORIZED, trackCode))
 					.map(${NAME}Dto::getUuid)
 					.filter(StringUtils::hasLength)
 					.flatMap(dtoUuid -> repository.findByUuidAnd${principal}UuidAndIsActiveTrue(dtoUuid, getPrincipalUuid()))
-					.filter(Rethrow.rethrowPredicate(entity -> validator.validatePartialUpdate(dto, entity)))
+					.filter(Rethrow.rethrowPredicate(entity -> validator.validatePartialUpdate(dto, entity, trackCode)))
 					.map(entity -> mapper.partialUpdate(dto, entity))
 					.orElseThrow(() -> new ApplicationUncheckException(new EnumerationWrapper<>(ErrorCode.NOT_FOUND), trackCode, HttpStatus.UNPROCESSABLE_ENTITY));
 			}
@@ -186,7 +189,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 			@Transactional(propagation = Propagation.REQUIRED)
 			public List<${NAME}Dto> partialUpdate(List<${NAME}Dto> list) throws ApplicationUncheckException {
 				TrackCode trackCode = trackCode(RequestType.PATCH);
-				return processList(list, trackCode, Rethrow.rethrowFunction(this::prepareEntityToPartialUpdate));
+				return processList(list, trackCode, Rethrow.rethrowFunction(aDto -> prepareEntityToPartialUpdate(aDto, trackCode)));
 			}
 
 			@Override
@@ -195,7 +198,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 				Optional<${NAME}> optionalEntity = Optional.ofNullable(uuid)
 				.filter(StringUtils::hasLength)
 				.flatMap(s -> repository.findByUuidAnd${principal}UuidAndIsActiveTrue(s, getPrincipalUuid()))
-				.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity)));
+				.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity, trackCode)));
 				if (optionalEntity.isPresent()) {
 					repository.delete(optionalEntity.get());
 				} else {
@@ -219,7 +222,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 				.filter(s -> validator.validatePrincipalUuid(s, ErrorCode.NOT_AUTHORIZED, trackCode))
 				.map(s ->  repository.findAllBy${principal}UuidAndIsActiveTrue(s))
 				.flatMap(Collection::stream)
-				.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity)))
+				.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity, trackCode)))
 				.map(entity -> mapper.toDto(entity))
 				.collect(Collectors.toList());
 			}
@@ -227,14 +230,13 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 			@Override
 			@Transactional(propagation = Propagation.REQUIRED)
 			public void deleteAllBy${principal}Uuid(String uuid) throws ApplicationUncheckException {
-
 				TrackCode trackCode = trackCode(RequestType.DELETE_ALL);
 				List<${NAME}> list = Stream.ofNullable(uuid)
 					.filter(StringUtils::hasLength)
 					.filter(s -> validator.validatePrincipalUuid(s, ErrorCode.NOT_AUTHORIZED, trackCode))
 					.map(s -> repository.findAllBy${principal}UuidAndIsActiveTrue(uuid))
 					.flatMap(Collection::stream)
-					.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity)))
+					.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity, trackCode)))
 					.collect(Collectors.toList());
 				if(!list.isEmpty()){
 					repository.deleteAll(list);
@@ -248,10 +250,11 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 						@Override
 						@Transactional(readOnly = true)
 						public List<${NAME}Dto> getAllBy${parent}Uuid(String uuid) {
+							TrackCode trackCode = trackCode(RequestType.GET_ALL);
 							return Stream.ofNullable(uuid)
 							.map(s ->  repository.findAllBy${parent}UuidAnd${principal}UuidAndIsActiveTrue(s, getPrincipalUuid()))
 							.flatMap(Collection::stream)
-							.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity)))
+							.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity, trackCode)))
 							.map(entity -> mapper.toDto(entity))
 							.collect(Collectors.toList());
 						}
@@ -263,7 +266,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 							List<${NAME}> list = Stream.ofNullable(uuid)
 								.map(s -> repository.findAllBy${parent}UuidAnd${principal}UuidAndIsActiveTrue(uuid, getPrincipalUuid()))
 								.flatMap(Collection::stream)
-								.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity)))
+								.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity, trackCode)))
 								.collect(Collectors.toList());
 							if(!list.isEmpty()){
 								repository.deleteAll(list);
@@ -286,15 +289,17 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 			@Override
 			@Transactional(readOnly = true)
 			public Optional<${NAME}Dto> getByUuid(String uuid) {
+				TrackCode trackCode = trackCode(RequestType.GET);
 				return Optional.ofNullable(uuid)
 					.filter(StringUtils::hasLength)
 					.flatMap(s -> repository.findByUuidAndIsActiveTrue(s))
-					.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity)))
+					.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity, trackCode)))
 					.map(entity -> mapper.toDto(entity));
 			}
 
 			@Override
 			public Page<${NAME}Dto> search(${NAME}Dto dto, PageRequest pageRequest) {
+			TrackCode trackCode = trackCode(RequestType.SEARCH);
 			return Optional.ofNullable(dto)
 				.filter(dto1 -> Objects.nonNull(pageRequest))
 				.map(aDto -> {
@@ -308,7 +313,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 						.map(Slice::getContent)
 						.stream()
 						.flatMap(Collection::stream)
-						.filter(entity -> validator.validate(entity))
+						.filter(entity -> validator.validate(entity, trackCode))
 						.map(entity -> mapper.toDto(entity))
 						.collect(Collectors.toList()), pageRequest, page.getTotalElements()))
 				.orElse(new PageImpl<>(new ArrayList<>()));
@@ -316,14 +321,14 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 
 			@Override
 			public Optional<${NAME}Dto> save(${NAME}Dto dto) throws ApplicationUncheckException {
+				TrackCode trackCode = trackCode(RequestType.POST);
 				return Optional.ofNullable(dto)
 					.map(Rethrow.rethrowFunction(this::prepareEntityToSave))
-					.map(entity -> repository.save(entity))
+					.map(entity -> repository.save(entity, trackCode))
 					.map(entity -> mapper.toDto(entity));
 			}
 
-			private ${NAME} prepareEntityToSave(${NAME}Dto dto) throws ApplicationUncheckException {
-				TrackCode trackCode = trackCode(RequestType.POST);
+			private ${NAME} prepareEntityToSave(${NAME}Dto dto, TrackCode trackCode) throws ApplicationUncheckException {
 				if (dto == null) {
 					throw new ApplicationUncheckException(new EnumerationWrapper<>(ErrorCode.INVALID_REQUEST), trackCode, HttpStatus.UNPROCESSABLE_ENTITY);
 				}
@@ -331,7 +336,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 					.map(${NAME}Dto::getUuid)
 					.filter(StringUtils::hasLength)
 					.flatMap(dtoUuid -> repository.findByUuid(dtoUuid))
-					.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity)));
+					.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity, trackCode)));
 				if (optionalEntity.isPresent()) {
 					throw new ApplicationUncheckException(new EnumerationWrapper<>(ErrorCode.INVALID_REQUEST), trackCode, HttpStatus.UNPROCESSABLE_ENTITY);
 				}
@@ -342,24 +347,24 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 			@Transactional(propagation = Propagation.REQUIRED)
 			public List<${NAME}Dto> save(List<${NAME}Dto> list) throws ApplicationUncheckException {
 				TrackCode trackCode = trackCode(RequestType.POST_ALL);
-				return processList(list, trackCode, Rethrow.rethrowFunction(this::prepareEntityToUpdate));
+				return processList(list, trackCode, Rethrow.rethrowFunction(aDto -> prepareEntityToSave(aDto, trackCode)));
 			}
 
 			@Override
 			public Optional<${NAME}Dto> update(${NAME}Dto dto) throws ApplicationUncheckException {
+				TrackCode trackCode = trackCode(RequestType.PUT);
 				return Optional.ofNullable(dto)
-					.map(Rethrow.rethrowFunction(this::prepareEntityToUpdate))
+					.map(Rethrow.rethrowFunction(aDto -> prepareEntityToUpdate(aDto, trackCode)))
 					.map(entity -> repository.save(entity))
 					.map(entity -> mapper.toDto(entity));
 			}
 
-			private ${NAME} prepareEntityToUpdate(${NAME}Dto dto) throws ApplicationUncheckException {
-				TrackCode trackCode = trackCode(RequestType.PUT);
+			private ${NAME} prepareEntityToUpdate(${NAME}Dto dto, TrackCode trackCode) throws ApplicationUncheckException {
 				return Optional.of(dto)
 					.map(${NAME}Dto::getUuid)
 					.filter(StringUtils::hasLength)
 					.flatMap(dtoUuid -> repository.findByUuidAndIsActiveTrue(dtoUuid))
-					.filter(Rethrow.rethrowPredicate(entity -> validator.validate(dto, entity)))
+					.filter(Rethrow.rethrowPredicate(entity -> validator.validate(dto, entity, trackCode)))
 					.map(entity -> mapper.update(dto, entity))
 					.orElseThrow(() -> new ApplicationUncheckException(new EnumerationWrapper<>(ErrorCode.NOT_FOUND), trackCode, HttpStatus.UNPROCESSABLE_ENTITY));
 			}
@@ -368,13 +373,14 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 			@Transactional(propagation = Propagation.REQUIRED)
 			public List<${NAME}Dto> update(List<${NAME}Dto> list) throws ApplicationUncheckException {
 				TrackCode trackCode = trackCode(RequestType.PUT_ALL);
-				return processList(list, trackCode, Rethrow.rethrowFunction(this::prepareEntityToUpdate));
+				return processList(list, trackCode, Rethrow.rethrowFunction(aDto -> prepareEntityToUpdate(aDto, trackCode)));
 			}
 
 			@Override
 			public Optional<${NAME}Dto> partialUpdate(${NAME}Dto dto) throws ApplicationUncheckException {
+				TrackCode trackCode = trackCode(RequestType.PATCH);
 				return Optional.ofNullable(dto)
-					.map(Rethrow.rethrowFunction(this::prepareEntityToPartialUpdate))
+					.map(Rethrow.rethrowFunction(aDto -> prepareEntityToPartialUpdate(aDto, trackCode)))
 					.map(entity -> repository.save(entity))
 					.map(entity -> mapper.toDto(entity));
 			}
@@ -385,7 +391,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 					.map(${NAME}Dto::getUuid)
 					.filter(StringUtils::hasLength)
 					.flatMap(dtoUuid -> repository.findByUuidAndIsActiveTrue(dtoUuid))
-					.filter(Rethrow.rethrowPredicate(entity -> validator.validatePartialUpdate(dto, entity)))
+					.filter(Rethrow.rethrowPredicate(entity -> validator.validatePartialUpdate(dto, entity, trackCode)))
 					.map(entity -> mapper.partialUpdate(dto, entity))
 					.orElseThrow(() -> new ApplicationUncheckException(new EnumerationWrapper<>(ErrorCode.NOT_FOUND), trackCode, HttpStatus.UNPROCESSABLE_ENTITY));
 			}
@@ -394,7 +400,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 			@Transactional(propagation = Propagation.REQUIRED)
 			public List<${NAME}Dto> partialUpdate(List<${NAME}Dto> list) throws ApplicationUncheckException {
 				TrackCode trackCode = trackCode(RequestType.PATCH);
-				return processList(list, trackCode, Rethrow.rethrowFunction(this::prepareEntityToPartialUpdate));
+				return processList(list, trackCode, Rethrow.rethrowFunction(aDto -> prepareEntityToPartialUpdate(aDto, trackCode));
 			}
 
 			@Override
@@ -403,7 +409,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 				Optional<${NAME}> optionalEntity = Optional.ofNullable(uuid)
 				.filter(StringUtils::hasLength)
 				.flatMap(s -> repository.findByUuidAndIsActiveTrue(s))
-				.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity)));
+				.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity, trackCode)));
 				if (optionalEntity.isPresent()) {
 					repository.delete(optionalEntity.get());
 				} else {
@@ -422,10 +428,11 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 					@Override
 					@Transactional(readOnly = true)
 					public List<${NAME}Dto> getAllBy${parent}Uuid(String uuid) {
+						TrackCode trackCode = trackCode(RequestType.GET_ALL);
 						return Stream.ofNullable(uuid)
 						.map(s ->  repository.findAllBy${parent}UuidAndIsActiveTrue(s))
 						.flatMap(Collection::stream)
-						.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity)))
+						.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity, trackCode)))
 						.map(entity -> mapper.toDto(entity))
 						.collect(Collectors.toList());
 					}
@@ -437,7 +444,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 						List<${NAME}> list = Stream.ofNullable(uuid)
 							.map(s -> new ArrayList<>(repository.findAllBy${parent}UuidAndIsActiveTrue(uuid)))
 							.flatMap(Collection::stream)
-							.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity)))
+							.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity, trackCode)))
 							.collect(Collectors.toList());
 						if(!list.isEmpty()){
 							repository.deleteAll(list);
