@@ -58,7 +58,7 @@ public class ChildUnitGenService {
 		Velocity.mergeTemplate(template, "UTF-8", context, writer1);
 		writer1.flush();
 		writer1.close();
-		for (int i = 1; i <= 22; i++) {
+		for (int i = 1; i <= 26; i++) {
 			template = "velocity/units/UnitSturcture.java.child." + i + ".java";
 			outputFile = outputFileBase + "Child_" + i + ".java";
 			writer1 = new FileWriter(new File(outputFile));

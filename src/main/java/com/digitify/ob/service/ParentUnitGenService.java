@@ -36,7 +36,9 @@ public class ParentUnitGenService {
 		context.put("Status_Enum_List", "Status1,Status2,Status3");
 		context.put("Unique_field", "ParentNumber");
 //		context.put("Parent", parent);
+		context.put("Parent", "");
 //		context.put("Principal", "ApplicationCustomer");
+		context.put("Principal", "");
 		context.put("Api_context_path", "/api/" + name.toLowerCase());
 
 		return context;
@@ -54,7 +56,7 @@ public class ParentUnitGenService {
 		Velocity.mergeTemplate(template0, "UTF-8", context, writer);
 		writer.flush();
 		writer.close();
-		for (int i = 1; i <= 22; i++) {
+		for (int i = 1; i <= 26; i++) {
 			String template1 = "velocity/units/UnitSturcture.java.child." + i + ".java";
 			String outputFile1 = outputFileBase + "Unit_" + i + ".java";
 			Writer writer1 = new FileWriter(new File(outputFile1));

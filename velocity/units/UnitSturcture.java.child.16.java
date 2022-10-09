@@ -32,13 +32,15 @@ public class ${NAME}Controller implements RequestValidationAdviser {
 	@Autowired private ${NAME}Service service;
 
 	@GetMapping(path = "/{uuid}")
-	@PreAuthorize("hasAuthority('READ_${NAME.toUpperCase()}')")
+	@PreAuthorize("hasAnyAuthority({'USER','ADMIN','READ_${NAME.toUpperCase()}','ADMIN_READ_${NAME.toUpperCase()}' })" +
+			"|| hasAnyRole('ROLE_USER', 'ROLE_ADMIN','ROLE_SUPER_ADMIN', 'ROLE_OWNER')")
 	public ResponseEntity<ApiResponse<${NAME}Dto>> get${NAME}(@PathVariable String uuid) {
 		return new ResponseEntity<>(new ApiResponse<>(null, service.get(uuid)), HttpStatus.OK);
 	}
 
 	@PostMapping(path = "/search/{page-no}/{page-size}")
-	@PreAuthorize("hasAuthority('READ_${NAME.toUpperCase()}')")
+	@PreAuthorize("hasAnyAuthority({'USER','ADMIN','READ_${NAME.toUpperCase()}','ADMIN_READ_${NAME.toUpperCase()}' })" +
+			"|| hasAnyRole('ROLE_USER', 'ROLE_ADMIN','ROLE_SUPER_ADMIN', 'ROLE_OWNER')")
 	public ResponseEntity<ApiResponse<Page<${NAME}Dto>>> search${NAME}(@PathVariable("page-no") int pageNo,
 																   @PathVariable("page-size") int pageSize,
 																   @RequestBody ${NAME}SearchDto dto) {
@@ -47,7 +49,8 @@ public class ${NAME}Controller implements RequestValidationAdviser {
 	}
     
 	@PostMapping
-	@PreAuthorize("hasAuthority('WRITE_${NAME.toUpperCase()}')")
+	@PreAuthorize("hasAnyAuthority({'USER','ADMIN','WRITE_${NAME.toUpperCase()}','ADMIN_WRITE_${NAME.toUpperCase()}' })" +
+			"|| hasAnyRole('ROLE_USER', 'ROLE_ADMIN','ROLE_SUPER_ADMIN', 'ROLE_OWNER')")
 	public ResponseEntity<ApiResponse<${NAME}Dto>> save${NAME}(@Valid @RequestBody ${NAME}CreateDto dto, BindingResult bindingResult) throws ApplicationUncheckException {
 		//todo: ${NAME}UpdateDto must include only those fields for which create is allowed.
 		//todo: create EntityType enum and inherit it with EnumerationFace interface under ${basePackage}.enums and
@@ -59,7 +62,8 @@ public class ${NAME}Controller implements RequestValidationAdviser {
 	}
     
 	@PutMapping(path = "/{uuid}")
-	@PreAuthorize("hasAuthority('UPDATE_${NAME.toUpperCase()}')")
+	@PreAuthorize("hasAnyAuthority({'USER','ADMIN','UPDATE_${NAME.toUpperCase()}','ADMIN_UPDATE_${NAME.toUpperCase()}' })" +
+			"|| hasAnyRole('ROLE_USER', 'ROLE_ADMIN','ROLE_SUPER_ADMIN', 'ROLE_OWNER')")
 	public ResponseEntity<ApiResponse<${NAME}Dto>> update${NAME}(@PathVariable String uuid,@Valid @RequestBody ${NAME}UpdateDto dto, BindingResult bindingResult) throws ApplicationUncheckException {
 
 		//todo: ${NAME}UpdateDto must include only those fields for which update is allowed.
@@ -73,7 +77,8 @@ public class ${NAME}Controller implements RequestValidationAdviser {
 	}
     
 	@PatchMapping
-	@PreAuthorize("hasAuthority('UPDATE_${NAME.toUpperCase()}')")
+	@PreAuthorize("hasAnyAuthority({'USER','ADMIN','UPDATE_${NAME.toUpperCase()}','ADMIN_UPDATE_${NAME.toUpperCase()}' })" +
+			"|| hasAnyRole('ROLE_USER', 'ROLE_ADMIN','ROLE_SUPER_ADMIN', 'ROLE_OWNER')")
 	public ResponseEntity<ApiResponse<${NAME}Dto>> partialUpdate${NAME}(@Valid @RequestBody ${NAME}PartialUpdateDto partialDto, BindingResult bindingResult) throws ApplicationUncheckException {
 		//todo: ${NAME}UpdateDto must include only those fields for which partialUpdate is allowed.
 		//todo: create EntityType enum and inherit it with EnumerationFace interface under ${basePackage}.enums and
@@ -84,28 +89,31 @@ public class ${NAME}Controller implements RequestValidationAdviser {
 		return new ResponseEntity<>(new ApiResponse<>(null, service.partialUpdate(partialDto)), HttpStatus.ACCEPTED);
 	}
     
-##	@DeleteMapping(path = "/{uuid}")
-##	@PreAuthorize("hasAuthority('DELETE_${NAME.toUpperCase()}')")
-##	public ResponseEntity<ApiResponse<${NAME}Dto>> delete${NAME}( @PathVariable String uuid) throws ApplicationUncheckException {
-##		service.delete(uuid);
-##		return new ResponseEntity<>(new ApiResponse<>(null, null), HttpStatus.NO_CONTENT);
-##	}
+	@DeleteMapping(path = "/{uuid}")
+	@PreAuthorize("hasAnyAuthority({'ADMIN','ADMIN_DELETE_${NAME.toUpperCase()}' })" +
+			"|| hasAnyRole('ROLE_ADMIN','ROLE_SUPER_ADMIN', 'ROLE_OWNER')")
+	public ResponseEntity<ApiResponse<${NAME}Dto>> delete${NAME}( @PathVariable String uuid) throws ApplicationUncheckException {
+		service.delete(uuid);
+		return new ResponseEntity<>(new ApiResponse<>(null, null), HttpStatus.NO_CONTENT);
+	}
 	
 	#if(${principal} && ${principal} != "" )
 		#set($principalCamelCase = $principal.substring(0,1).toLowerCase()+$principal.substring(1))
-
-		@PreAuthorize("hasAuthority('READ_${NAME.toUpperCase()}')")
+		@PreAuthorize("hasAnyAuthority({'USER','ADMIN','READ_${NAME.toUpperCase()}','ADMIN_READ_${NAME.toUpperCase()}' })" +
+			"|| hasAnyRole('ROLE_USER', 'ROLE_ADMIN','ROLE_SUPER_ADMIN', 'ROLE_OWNER')")
 		@GetMapping(path = "/${principalCamelCase}/{uuid}")
 		public ResponseEntity<ApiResponse<List<${NAME}Dto>>> getAll${NAME}By${principal}Uuid(@PathVariable String uuid) {
 			return new ResponseEntity<>(new ApiResponse<>(null, service.getAllBy${principal}Uuid(uuid)), HttpStatus.OK);
 		}
 
-##		@DeleteMapping(path = "/${principalCamelCase}/{uuid}")
-##		@PreAuthorize("hasAuthority('DELETE_${NAME.toUpperCase()}')")
-##		public ResponseEntity<ApiResponse<${NAME}Dto>> deleteAll${NAME}By${principal}Uuid(@PathVariable String uuid) throws ApplicationUncheckException {
-##			service.deleteAllBy${principal}Uuid(uuid);
-##			return new ResponseEntity<>(new ApiResponse<>(null, null), HttpStatus.NO_CONTENT);
-##		}
+		@DeleteMapping(path = "/${principalCamelCase}/{uuid}")
+		@PreAuthorize("hasAnyAuthority({'ADMIN','ADMIN_DELETE_${NAME.toUpperCase()}' }) " +
+			" || hasAnyRole( 'ROLE_ADMIN','ROLE_SUPER_ADMIN', 'ROLE_OWNER')")
+		public ResponseEntity<ApiResponse<${NAME}Dto>> deleteAll${NAME}By${principal}Uuid(@PathVariable String uuid) throws ApplicationUncheckException {
+			service.deleteAllBy${principal}Uuid(uuid);
+			return new ResponseEntity<>(new ApiResponse<>(null, null), HttpStatus.NO_CONTENT);
+		}
 	#end
 	#end
 }
+

@@ -1,6 +1,5 @@
 #set($PARENT = ${Parent})
 #set($principal = ${Principal})
-#set($principalCamelCase = $principal.substring(0,1).toLowerCase()+$principal.substring(1))
 #set($uniqueField = ${Unique_field})
 #if (${PACKAGE_NAME} && ${PACKAGE_NAME} != "")package ${PACKAGE_NAME};#end
 
@@ -30,6 +29,7 @@ public class ${NAME}SearchDto {
 	#end
 
 	#if( ${principal} && ${principal} != "" )
+		#set($principalCamelCase = $Principal.substring(0,1).toLowerCase()+$Principal.substring(1))
 		@JsonProperty("${principalCamelCase}Uuid")
 		private String ${principalCamelCase}Uuid;
     	#if( ${PARENT} && ${PARENT} != "")

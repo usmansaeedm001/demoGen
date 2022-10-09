@@ -102,8 +102,8 @@ public interface ${NAME}Repository extends JpaRepository<${NAME}, Long>{
 		* Query By unique ${uniqueField}
 		*
 		**********/
-		Optional<${NAME}> findBy${uniqueField}Uuid(String unique);
-		Optional<${NAME}> findBy${uniqueField}UuidAndIsActiveTrue(String unique);
+		Optional<${NAME}> findBy${uniqueField}(String unique);
+		Optional<${NAME}> findBy${uniqueField}AndIsActiveTrue(String unique);
 		boolean existsBy${uniqueField}AndUuidNot(String ${uniqueFieldCamelCase}, String uuid);
 		boolean existsBy${uniqueField}AndUuidNotAndIsActiveTrue(String ${uniqueFieldCamelCase}, String uuid);
 	#end

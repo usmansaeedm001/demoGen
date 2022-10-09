@@ -2,7 +2,6 @@
 #set($basePackage = ${Base_package})
 #set($uniqueField = ${Unique_field})
 #set($NameCamelCase = $NAME.substring(0,1).toLowerCase()+$NAME.substring(1))
-#set($uniqueFieldCamelCase = $uniqueField.substring(0,1).toLowerCase()+$uniqueField.substring(1))
 #if (${PACKAGE_NAME} && ${PACKAGE_NAME} != "")package ${PACKAGE_NAME};#end
 
 import ${basePackage}.enums.ErrorCode;
@@ -41,6 +40,7 @@ public class ${NAME}EntityValidatorImpl implements ${NAME}EntityValidator {
 	public Boolean validateDto(${NAME}Dto dto, TrackCode trackCode) throws BusinessValidationException {
 	Boolean exists = true;
 	#if(${uniqueField} && ${uniqueField} != "")
+	#set($uniqueFieldCamelCase = $uniqueField.substring(0,1).toLowerCase()+$uniqueField.substring(1))
 	exists = exists && Optional.ofNullable(dto)
 			.map(${NAME}Dto::get${uniqueField})
 			.map(s -> repository.exists(Example.of(${NAME}.builder().${uniqueFieldCamelCase}(s).build())))
@@ -87,6 +87,7 @@ public class ${NAME}EntityValidatorImpl implements ${NAME}EntityValidator {
 			.filter(aBoolean -> !aBoolean)
 			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode.setLayerCode(LayerType.ENTITY_VALIDATION_LAYER),
 			"${NAME} already exists with specified ${uniqueField}."));
+
 		#end
 		#if( ${PARENT} && ${PARENT} != "")
 		#foreach($parent in $PARENT.split(","))
@@ -98,6 +99,7 @@ public class ${NAME}EntityValidatorImpl implements ${NAME}EntityValidator {
 			.filter(aBoolean -> !aBoolean)
 			.orElseThrow(() -> new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode.setLayerCode(LayerType.ENTITY_VALIDATION_LAYER),
 			"${NAME} already exists."));
+
 		#end
 		#end
 		return exists;
@@ -110,11 +112,11 @@ public class ${NAME}EntityValidatorImpl implements ${NAME}EntityValidator {
 		if (dto != null && StringUtils.hasLength(dto.get${uniqueField}())) {
 			if (repository.existsBy${uniqueField}AndUuidNot(dto.get${uniqueField}(), entity.getUuid())) {
 				throw new BusinessValidationException(new EnumerationWrapper<>(ErrorCode.ALREADY_EXISTS), trackCode.setLayerCode(LayerType.ENTITY_VALIDATION_LAYER),
-			"${NAME} already exists with specified ${uniqueField}."));
+			"${NAME} already exists with specified ${uniqueField}.");
 			}
 		}
+
 		#end
-		
 		#if( ${PARENT} && ${PARENT} != "")
 		#foreach($parent in $PARENT.split(","))
 		#set($parentCamelCase = $parent.substring(0,1).toLowerCase()+$parent.substring(1))
@@ -124,6 +126,7 @@ public class ${NAME}EntityValidatorImpl implements ${NAME}EntityValidator {
 				"${NAME} already exists.");
 			}
 		}
+
 		#end
 		#end
 		return exists;

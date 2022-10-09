@@ -35,6 +35,8 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 	@Autowired private ${NAME}Repository repository;
 	@Autowired private ${NAME}Mapper mapper;
 	@Autowired private ${NAME}EntityValidator validator;
+	@Autowired private ${NAME}ChangeReactor changeReactor;
+	@Autowired private ${NAME}DeleteReactor deleteReactor;
 
 	@Override
 	public String getPrincipalUuid() {
@@ -126,6 +128,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 				if (optionalEntity.isPresent()) {
 					throw new ApplicationUncheckException(new EnumerationWrapper<>(ErrorCode.INVALID_REQUEST), trackCode, HttpStatus.UNPROCESSABLE_ENTITY);
 				}
+				changeReactor.react(dto, new ${NAME}(), trackCode);
 				return mapper.toEntity(dto);
 			}
 
@@ -153,6 +156,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 					.filter(StringUtils::hasLength)
 					.flatMap(dtoUuid -> repository.findByUuidAnd${principal}UuidAndIsActiveTrue(dtoUuid, getPrincipalUuid()))
 					.filter(Rethrow.rethrowPredicate(entity -> validator.validate(dto, entity, trackCode)))
+					.filter(Rethrow.rethrowPredicate(entity -> changeReactor.react(dto, entity, trackCode)))
 					.map(entity -> mapper.update(dto, entity))
 					.orElseThrow(() -> new ApplicationUncheckException(new EnumerationWrapper<>(ErrorCode.NOT_FOUND), trackCode, HttpStatus.UNPROCESSABLE_ENTITY));
 			}
@@ -181,6 +185,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 					.filter(StringUtils::hasLength)
 					.flatMap(dtoUuid -> repository.findByUuidAnd${principal}UuidAndIsActiveTrue(dtoUuid, getPrincipalUuid()))
 					.filter(Rethrow.rethrowPredicate(entity -> validator.validatePartialUpdate(dto, entity, trackCode)))
+					.filter(Rethrow.rethrowPredicate(entity -> changeReactor.react(dto, entity, trackCode)))
 					.map(entity -> mapper.partialUpdate(dto, entity))
 					.orElseThrow(() -> new ApplicationUncheckException(new EnumerationWrapper<>(ErrorCode.NOT_FOUND), trackCode, HttpStatus.UNPROCESSABLE_ENTITY));
 			}
@@ -198,7 +203,8 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 				Optional<${NAME}> optionalEntity = Optional.ofNullable(uuid)
 				.filter(StringUtils::hasLength)
 				.flatMap(s -> repository.findByUuidAnd${principal}UuidAndIsActiveTrue(s, getPrincipalUuid()))
-				.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity, trackCode)));
+				.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity, trackCode)))
+				.filter(Rethrow.rethrowPredicate(entity -> deleteReactor.react(entity, trackCode)));
 				if (optionalEntity.isPresent()) {
 					repository.delete(optionalEntity.get());
 				} else {
@@ -237,6 +243,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 					.map(s -> repository.findAllBy${principal}UuidAndIsActiveTrue(uuid))
 					.flatMap(Collection::stream)
 					.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity, trackCode)))
+					.filter(Rethrow.rethrowPredicate(entity -> deleteReactor.react(entity, trackCode)))
 					.collect(Collectors.toList());
 				if(!list.isEmpty()){
 					repository.deleteAll(list);
@@ -267,6 +274,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 								.map(s -> repository.findAllBy${parent}UuidAnd${principal}UuidAndIsActiveTrue(uuid, getPrincipalUuid()))
 								.flatMap(Collection::stream)
 								.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity, trackCode)))
+								.filter(Rethrow.rethrowPredicate(entity -> deleteReactor.react(entity, trackCode)))
 								.collect(Collectors.toList());
 							if(!list.isEmpty()){
 								repository.deleteAll(list);
@@ -323,8 +331,8 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 			public Optional<${NAME}Dto> save(${NAME}Dto dto) throws ApplicationUncheckException {
 				TrackCode trackCode = trackCode(RequestType.POST);
 				return Optional.ofNullable(dto)
-					.map(Rethrow.rethrowFunction(this::prepareEntityToSave))
-					.map(entity -> repository.save(entity, trackCode))
+					.map(Rethrow.rethrowFunction(aDto -> prepareEntityToSave(aDto, trackCode)))
+					.map(entity -> repository.save(entity))
 					.map(entity -> mapper.toDto(entity));
 			}
 
@@ -340,6 +348,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 				if (optionalEntity.isPresent()) {
 					throw new ApplicationUncheckException(new EnumerationWrapper<>(ErrorCode.INVALID_REQUEST), trackCode, HttpStatus.UNPROCESSABLE_ENTITY);
 				}
+				changeReactor.react(dto, new ${NAME}(), trackCode);
 				return mapper.toEntity(dto);
 			}
 
@@ -365,6 +374,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 					.filter(StringUtils::hasLength)
 					.flatMap(dtoUuid -> repository.findByUuidAndIsActiveTrue(dtoUuid))
 					.filter(Rethrow.rethrowPredicate(entity -> validator.validate(dto, entity, trackCode)))
+					.filter(Rethrow.rethrowPredicate(entity -> changeReactor.react(dto, entity, trackCode)))
 					.map(entity -> mapper.update(dto, entity))
 					.orElseThrow(() -> new ApplicationUncheckException(new EnumerationWrapper<>(ErrorCode.NOT_FOUND), trackCode, HttpStatus.UNPROCESSABLE_ENTITY));
 			}
@@ -385,13 +395,13 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 					.map(entity -> mapper.toDto(entity));
 			}
 
-			private ${NAME} prepareEntityToPartialUpdate(${NAME}Dto dto) throws ApplicationUncheckException {
-				TrackCode trackCode = trackCode(RequestType.PATCH);
+			private ${NAME} prepareEntityToPartialUpdate(${NAME}Dto dto, TrackCode trackCode) throws ApplicationUncheckException {
 				return Optional.ofNullable(dto)
 					.map(${NAME}Dto::getUuid)
 					.filter(StringUtils::hasLength)
 					.flatMap(dtoUuid -> repository.findByUuidAndIsActiveTrue(dtoUuid))
 					.filter(Rethrow.rethrowPredicate(entity -> validator.validatePartialUpdate(dto, entity, trackCode)))
+					.filter(Rethrow.rethrowPredicate(entity -> changeReactor.react(dto, entity, trackCode)))
 					.map(entity -> mapper.partialUpdate(dto, entity))
 					.orElseThrow(() -> new ApplicationUncheckException(new EnumerationWrapper<>(ErrorCode.NOT_FOUND), trackCode, HttpStatus.UNPROCESSABLE_ENTITY));
 			}
@@ -399,8 +409,8 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 			@Override
 			@Transactional(propagation = Propagation.REQUIRED)
 			public List<${NAME}Dto> partialUpdate(List<${NAME}Dto> list) throws ApplicationUncheckException {
-				TrackCode trackCode = trackCode(RequestType.PATCH);
-				return processList(list, trackCode, Rethrow.rethrowFunction(aDto -> prepareEntityToPartialUpdate(aDto, trackCode));
+				TrackCode trackCode = trackCode(RequestType.PATCH_ALL);
+				return processList(list, trackCode, Rethrow.rethrowFunction(aDto -> prepareEntityToPartialUpdate(aDto, trackCode)));
 			}
 
 			@Override
@@ -409,7 +419,8 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 				Optional<${NAME}> optionalEntity = Optional.ofNullable(uuid)
 				.filter(StringUtils::hasLength)
 				.flatMap(s -> repository.findByUuidAndIsActiveTrue(s))
-				.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity, trackCode)));
+				.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity, trackCode)))
+				.filter(Rethrow.rethrowPredicate(entity -> deleteReactor.react(entity, trackCode)));
 				if (optionalEntity.isPresent()) {
 					repository.delete(optionalEntity.get());
 				} else {
@@ -445,6 +456,7 @@ public class ${NAME}DataServiceImpl implements ${NAME}DataService {
 							.map(s -> new ArrayList<>(repository.findAllBy${parent}UuidAndIsActiveTrue(uuid)))
 							.flatMap(Collection::stream)
 							.filter(Rethrow.rethrowPredicate(entity -> validator.validate(entity, trackCode)))
+							.filter(Rethrow.rethrowPredicate(entity -> deleteReactor.react(entity, trackCode)))
 							.collect(Collectors.toList());
 						if(!list.isEmpty()){
 							repository.deleteAll(list);
