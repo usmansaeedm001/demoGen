@@ -12,7 +12,7 @@ import static java.util.stream.Collectors.toList;
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum ${NAME}Type implements Matchable {
-#if (${statusEnumList} && ${statusEnumList} != "")
+#if (${typeEnumList} && ${typeEnumList} != "")
 #set($list = ${typeEnumList})
 #foreach($enumStr in $list.split(","))
 #set($enum = $enumStr.trim())

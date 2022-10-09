@@ -1,7 +1,6 @@
 #set($PARENT = ${Parent})
 #set($principal = ${Principal})
 #set($uniqueField = ${Unique_field})
-#set($uniqueFieldCamelCase = $uniqueField.substring(0,1).toLowerCase()+$uniqueField.substring(1))
 #if (${PACKAGE_NAME} && ${PACKAGE_NAME} != "")package ${PACKAGE_NAME};#end
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -97,6 +96,7 @@ public interface ${NAME}Repository extends JpaRepository<${NAME}, Long>{
 	#end
 
 	#if(${uniqueField} && ${uniqueField} != "")
+		#set($uniqueFieldCamelCase = $uniqueField.substring(0,1).toLowerCase()+$uniqueField.substring(1))
 		/******
 		*
 		* Query By unique ${uniqueField}

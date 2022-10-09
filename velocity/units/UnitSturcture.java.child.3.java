@@ -22,25 +22,28 @@ public class ${NAME}SearchDto {
     @JsonProperty("uuid")
     private String uuid;
 
-    #if(${uniqueField} && ${uniqueField} != "")
-	#set($uniqueFieldCamelCase = $uniqueField.substring(0,1).toLowerCase()+$uniqueField.substring(1))
-    	@JsonProperty("${uniqueFieldCamelCase}")
-    	private String ${uniqueFieldCamelCase};
+    #if( ${principal} && ${principal} != "")
+		#set($principalCamelCase = $principal.substring(0,1).toLowerCase()+$principal.substring(1))
+    	@JsonProperty("${principalCamelCase}Uuid")
+		private String ${principalCamelCase}Uuid;
+    #end
+	#if( ${PARENT} && ${PARENT} != "")
+		#foreach($parent in $PARENT.split(","))
+			#if( ${principal} !=  ${parent})
+				#set($parentCamelCase = $parent.substring(0,1).toLowerCase()+$parent.substring(1))
+		    	@JsonProperty("${parentCamelCase}Uuid")
+		    	private String ${parentCamelCase}Uuid;
+    		#end
+		#end
 	#end
 
-	#if( ${principal} && ${principal} != "" )
-		#set($principalCamelCase = $Principal.substring(0,1).toLowerCase()+$Principal.substring(1))
-		@JsonProperty("${principalCamelCase}Uuid")
-		private String ${principalCamelCase}Uuid;
-    	#if( ${PARENT} && ${PARENT} != "")
-			#foreach($parent in $PARENT.split(","))
-			#if( ${principal} !=  ${parent})
-			#set($parentCamelCase = $parent.substring(0,1).toLowerCase()+$parent.substring(1))
-				@JsonProperty("${parentCamelCase}Uuid")
-				private String ${parentCamelCase}Uuid;
-			#end
-			#end
-		#end
+
+	@JsonProperty("status") private String status;
+
+	#if(${uniqueField} && ${uniqueField} != "")
+		#set($uniqueFieldCamelCase = $uniqueField.substring(0,1).toLowerCase()+$uniqueField.substring(1))
+    	@JsonProperty("${uniqueFieldCamelCase}")
+    	private String ${uniqueFieldCamelCase};
 	#end
 
 	@JsonProperty("active") private Boolean isActive;

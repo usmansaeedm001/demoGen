@@ -33,26 +33,28 @@ public class ${NAME} extends AbstractAuditing{
     @Column(name = "uuid")
     private String uuid;
 
-    #if(${uniqueField} && ${uniqueField} != "")
-		#set($uniqueFieldCamelCase = $uniqueField.substring(0,1).toLowerCase()+$uniqueField.substring(1))
-    	@Column(name = "${uniqueFieldCamelCase}")
-    	private String ${uniqueFieldCamelCase};
-	#end
-
     
     #if( ${principal} && ${principal} != "")
 		#set($principalCamelCase = $principal.substring(0,1).toLowerCase()+$principal.substring(1))
-    	@Column(name = "${principalCamelCase}Uuid")
+    	@Column(name = "${principalCamelCase}_Uuid")
 	    private String ${principalCamelCase}Uuid;
     #end
     #if( ${PARENT} && ${PARENT} != "")
 		#foreach($parent in $PARENT.split(","))
 			#if( ${principal} !=  ${parent})
 				#set($parentCamelCase = $parent.substring(0,1).toLowerCase()+$parent.substring(1))
-		    	@Column(name = "${parentCamelCase}Uuid")
+		    	@Column(name = "${parentCamelCase}_Uuid")
 		    	private String ${parentCamelCase}Uuid;
     		#end
 		#end
+	#end
+
+	@Column(name = "status") private String status;
+
+	#if(${uniqueField} && ${uniqueField} != "")
+	#set($uniqueFieldCamelCase = $uniqueField.substring(0,1).toLowerCase()+$uniqueField.substring(1))
+    	@Column(name = "${uniqueFieldCamelCase}")
+    	private String ${uniqueFieldCamelCase};
 	#end
 
 	@Column(name = "active") private Boolean isActive = true;

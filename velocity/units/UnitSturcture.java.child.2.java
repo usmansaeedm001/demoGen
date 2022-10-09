@@ -1,4 +1,5 @@
 #set($PARENT = ${Parent})
+#set($principal = ${Principal})
 #set($uniqueField = ${Unique_field})
 #if (${PACKAGE_NAME} && ${PACKAGE_NAME} != "")package ${PACKAGE_NAME};#end
 
@@ -21,15 +22,9 @@ public class ${NAME}Dto {
     @JsonProperty("uuid")
     private String uuid;
 
-    #if(${uniqueField} && ${uniqueField} != "")
-	#set($uniqueFieldCamelCase = $uniqueField.substring(0,1).toLowerCase()+$uniqueField.substring(1))
-    	@JsonProperty("${uniqueFieldCamelCase}")
-    	private String ${uniqueFieldCamelCase};
-	#end
-
-    #if( ${principal} && ${principal} != "")
-		#set($principalCamelCase = $principal.substring(0,1).toLowerCase()+$principal.substring(1))
-		@JsonProperty("${principalCamelCase}Uuid")
+	#if( ${principal} && ${principal} != "")
+	#set($principalCamelCase = $principal.substring(0,1).toLowerCase()+$principal.substring(1))
+    	@JsonProperty("${principalCamelCase}Uuid")
 		private String ${principalCamelCase}Uuid;
     #end
 	#if( ${PARENT} && ${PARENT} != "")
@@ -40,6 +35,15 @@ public class ${NAME}Dto {
 		    	private String ${parentCamelCase}Uuid;
     		#end
 		#end
+	#end
+
+
+	@JsonProperty("status") private String status;
+
+	#if(${uniqueField} && ${uniqueField} != "")
+		#set($uniqueFieldCamelCase = $uniqueField.substring(0,1).toLowerCase()+$uniqueField.substring(1))
+    	@JsonProperty("${uniqueFieldCamelCase}")
+    	private String ${uniqueFieldCamelCase};
 	#end
 
     @JsonProperty("active") private Boolean isActive;
